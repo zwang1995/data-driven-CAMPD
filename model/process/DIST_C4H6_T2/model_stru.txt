@@ -1,0 +1,7 @@
+FNN_model(
+  (l1): Linear(in_features=4, out_features=9, bias=True)
+  (l2): Linear(in_features=9, out_features=9, bias=True)
+  (l3): Linear(in_features=9, out_features=1, bias=True)
+  (act_func): Tanh()
+  (out_act_func): Sigmoid()
+)
