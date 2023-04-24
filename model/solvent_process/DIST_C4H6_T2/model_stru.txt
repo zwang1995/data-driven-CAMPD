@@ -1,0 +1,6 @@
+FNN_model(
+  (l1): Linear(in_features=10, out_features=14, bias=True)
+  (l3): Linear(in_features=14, out_features=1, bias=True)
+  (act_func): Sigmoid()
+  (out_act_func): Sigmoid()
+)
