@@ -1,4 +1,5 @@
 
+* `solvent_list.csv`: list of solvents used in process modeling
 
 * `DistillColumn_solvent.csv`: data used for modeling the Extractive Distillation Column (EDC)
 
