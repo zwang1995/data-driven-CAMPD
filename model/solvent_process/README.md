@@ -1,1 +1,10 @@
 
+- `DIST_C4H6_T2`: model for the C4H6 purity in the SRC distillate
+
+- `DIST_C4H8_T1`: model for the C4H8 purity in the EDC distillate
+
+- `RebDuty_T1`: model for the reboiler heat duty of the EDC
+
+- `RebDuty_T2`: model for the reboiler heat duty of the SRC
+
+- `optimization_T1T2`: result for the process optimization
