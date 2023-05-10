@@ -7,4 +7,4 @@
 
 - `RebDuty_T2`: model for the reboiler heat duty of the SRC
 
-- `optimization_T1T2`: results for the process optimization
+- `optimization_T1T2`: result for the process optimization
