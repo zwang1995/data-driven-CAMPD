@@ -14,7 +14,7 @@ This repository contains the data and scripts involved in the manuscript:
 * Aspen Plus: chemical process simulation
 
 ## Note
-The process simulation involved in this work is largely supported by our automatic simulation tool, which can be found from "[**Automatic Process Simulation in Aspen Plus**](https://github.com/zwang1995/Aspen-Plus-Automation)".  
+The process simulation involved in this work is largely supported by our automatic simulation tool, which can be found in "[**Automatic Process Simulation in Aspen Plus**](https://github.com/zwang1995/Aspen-Plus-Automation)".  
 
 
 ## Authors
