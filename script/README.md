@@ -17,4 +17,4 @@
 - `viz.py`: figure generation
 - `viz_utils.py`: functions used in viz.py
 
-***Note:** Run surrogate_modeling.py to establish data-driven models and run surrogate_optimization.py to perform the CAMPD.*
+***Note:** Run `surrogate_modeling.py` to establish data-driven models and run `surrogate_optimization.py` to perform the CAMPD.*
