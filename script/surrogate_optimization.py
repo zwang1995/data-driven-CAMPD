@@ -10,7 +10,6 @@ import pandas as pd
 from basic_utils import *
 from fnn_utils import *
 from aspen_utils import *
-# from viz_utils import *
 
 from pymoo.config import Config
 
@@ -135,8 +134,6 @@ def get_model_prediction(task, model_spec, X_for_pred):
         for i in range(5):
             model = get_model_params(model, task, model_spec, x_for_pred, out_path, i, n_layer, False)
             f = model(x_for_pred).detach().numpy()
-            # if perf == "RebDuty":
-            #     f = perf_scaler.inverse_transform(f)
             if perf == "RebDuty_T1":
                 f = perf_scaler_T1.inverse_transform(f)
             elif perf == "RebDuty_T2":
@@ -163,8 +160,6 @@ class OptimProblem(Problem):
             if task == "solvent":
                 xl, xu = [0.907091005, 70.09104, 712.218755, 125.947982, 0.337070321], \
                          [1.642181067, 200.32136, 1182.04039, 412.977047, 2.47090885]
-                # [0.843961468, 71.1222, 701.186804, 114.732986, 0.226455082], \
-                #          [1.642080264, 172.2676, 1618.32687, 395.4892, 8.43103044]
                 n_obj = 2
             elif task == "process":
                 if column_index == "T1":
@@ -193,7 +188,7 @@ class OptimProblem(Problem):
                     n_obj = 2
                     if error_constr_state: n_constr = 5  # g(x) <= 0
                 elif column_index == "T2":
-                    optimal_S_F = 2.38530065168425  # 3.22314120393114  # NMP: 2.38530065168425  # 2.404832714, 2.433799449
+                    optimal_S_F = 2.38530065168425
                     xl, xu = solvent_l + [8, 0.2, 3.5, optimal_S_F], solvent_u + [20, 2, 6, optimal_S_F]
                     n_obj = 2
                     if error_constr_state: n_constr = 5  # g(x) <= 0
@@ -210,11 +205,7 @@ class OptimProblem(Problem):
         super().__init__(n_var=len(xl), n_obj=n_obj, n_constr=n_constr, xl=xl, xu=xu)
 
     def _evaluate(self, X, out, *args, **kwargs):
-        # X = np.array([[1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 75, 4, 3.5, 3, 12, 0.6, 3.5]]) # for test only
         f_list, g_list = [], []
-
-        # if self.task == "solvent_process":
-        #     f_list.append((X[:, -7] + X[:, -3]) / 100)
 
         """ # Input preprocessing """
         if self.task == "solvent":
@@ -290,40 +281,20 @@ class OptimProblem(Problem):
                 if perf == "DIST_C4H8_T1":
                     f_list.append(1 - np.average(f_, axis=0))
                     g_list.append(-np.average(f_, axis=0) + 0.965)  # purity >= 0
-                    # g_list.append(np.average(f_, axis=0) - 1)  # purity <= 1
                 elif perf in ["RebDuty_T1"]:
                     f_list.append(np.average(f_, axis=0))
-                    # g_list.append((perf_scaler_mean + perf_scaler_std * np.average(f_, axis=0))-20000)  # duty >= 0
 
-            # Task = "process"
-            # elif self.task == "process":
-            #     if perf == "DIST_C4H8_T1":
-            #         f_list.append(1 - np.average(f_, axis=0))
-            #         g_list.append(-np.average(f_, axis=0) + 0.98)  # purity >= 0
-            #
-            #     elif perf == "DIST_C4H6_T2":
-            #         f_list.append(1 - np.average(f_, axis=0))
-            #         g_list.append(-np.average(f_, axis=0) + 0.97)  # purity >= 0
-            #         # g_list.append(np.average(f_, axis=0) - 1)  # purity <= 1
-            #
-            #     elif perf in ["RebDuty_T1", "RebDuty_T2"]:
-            #         f_list.append(np.average(f_, axis=0))
-            #         # g_list.append(-(perf_scaler_mean + perf_scaler_std * np.average(f_, axis=0)))  # duty >= 0
-            #         g_list.append((perf_scaler_mean + perf_scaler_std * np.average(f_, axis=0)) - 3000)  # duty <= 0
-            #
-            #     elif perf in ["hasERROR_T1", "hasERROR_T2"]:
-            #         if self.error_constr_state: g_list.append(np.average(f_, axis=0) - 0.5)
 
             # Task = "process"
             elif self.task == "process":
                 if perf == "DIST_C4H8_T1":
                     f_list.append(1 - np.average(f_, axis=0))
-                    g_list.append(-np.average(f_, axis=0) + 0.992)  # purity >= 0
+                    g_list.append(-np.average(f_, axis=0) + 0.992)
                     if self.column_index == "T1":
                         f_list.append(1 - np.average(f_, axis=0))
 
                 elif perf == "DIST_C4H6_T2":
-                    g_list.append(-np.average(f_, axis=0) + 0.994)  # purity >= 0
+                    g_list.append(-np.average(f_, axis=0) + 0.994)
                     if self.column_index == "T2":
                         f_list.append(1 - np.average(f_, axis=0))
                         f_list.append(np.average(f_, axis=0))
@@ -339,10 +310,6 @@ class OptimProblem(Problem):
                     #     g_list.append(-(mean_ + std_ * ff))
                     f_duty_list.append(mean_ + std_ * np.average(f_, axis=0))
                     g_dutyU_list.append(np.average(ori_f_, axis=0))
-
-                    # if self.column_index == "T1":
-                    #     f_list.append(np.average(f_, axis=0))
-                    #     g_list.append(np.average(f_, axis=0) - 20000)
 
 
                 elif perf in ["hasERROR_T1", "hasERROR_T2"]:
@@ -400,30 +367,6 @@ class OptimProblem(Problem):
         if self.initial_state:
             print(f"-> OF shape: {out['F'].shape}, Constraint shape: {out['G'].shape}")
             self.initial_state = False
-
-
-# def get_x_0(params, prop_scaler):
-#     task = params["task"]
-#     if task != "solvent": column_index = params["column_index"]
-#     if task == "solvent":
-#         x_0 = [[1.642080264, 99.1326, 1026.70949, 161.702975, 1.8902657]]  # 3.664060664,
-#     elif task == "process":
-#         if column_index == "T1":
-#             x_0 = [[75, 4, 3.5, 3]]
-#         elif column_index == "T2":
-#             x_0 = [[12, 0.6, 3.5, 3]]
-#         elif column_index == "T1T2":
-#             x_0 = [[75, 4, 3.5, 3, 12, 0.6, 3.5, 3]]
-#     elif task == "solvent_process":
-#         if column_index == "T1":
-#             x_0 = [[1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 75, 4, 3.5, 3]]
-#         elif column_index == "T2":
-#             x_0 = [[1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 12, 0.6, 3.5, 3]]
-#         elif column_index == "T1T2":
-#             x_0 = [
-#                 [1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 75, 4, 3.5, 3, 12, 0.6, 3.5, 3]]
-#     x_0 = get_Tensor(prop_scaler.transform(x_0))
-#     return x_0
 
 
 def get_OF_Model(task, column_index, class_state_T1=None, class_state_T2=None):
@@ -543,7 +486,6 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
             x_0 = get_x_0(params, prop_scaler_T1T2)
         out_path = params["main_out_path"]
 
-
     " # Specify output directory "
     char_ = "_constr" if error_constr_state else ""
     opt_path = create_directory(out_path + "optimization_" + column_index + char_ + "/")
@@ -593,7 +535,6 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
         mutation = MixedVariableMutation(mask, {
             "real": get_mutation("real_pm", eta=3.0),
             "int": get_mutation("int_pm", eta=3.0)})
-        # termination = get_termination("n_eval", 200000)
         if task == "process":
             algorithm = NSGA2(sampling=sampling, crossover=crossover, mutation=mutation)
         elif task == "solvent_process":
@@ -640,7 +581,7 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
             # print(prop)
             # print([lbi < propi for lbi, propi in zip(lb, prop)], [propi < ubi for propi, ubi in zip(prop, ub)])
             state = np.array([np.array([lbi < propi for lbi, propi in zip(lb, prop)]).all(),
-                  np.array([propi < ubi for propi, ubi in zip(prop, ub)]).all()]).all()
+                              np.array([propi < ubi for propi, ubi in zip(prop, ub)]).all()]).all()
             f1, f2 = get_model_prediction(task, model_spec, get_Tensor(std_prop.reshape(1, -1))).values()
             print(alias, state, dist, np.mean(f1), np.std(f1), np.mean(f2), np.std(f2))
 
@@ -693,7 +634,6 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
             Y = np.array([1 - res.F[:, 0], perf_scaler_T2.inverse_transform(res.F[:, 1])]).T
             Combine_loop_ = prop_scaler_T2.transform(Combine_loop)
         elif column_index == "T1T2":
-            # Y = np.array([1 - res.F[:, 0], 1 - res.F[:, 1], perf_scaler_T1T2.inverse_transform(res.F[:, 2])]).T
             Y = np.array([1 - res.F[:, 0], perf_scaler_T1T2.inverse_transform(res.F[:, 1])]).T
             Combine_loop_8D = np.hstack((Combine_loop, Combine_loop[:, n_input_pro - 1].reshape(-1, 1)))
             Combine_loop_ = prop_scaler_T1T2.transform(Combine_loop_8D)
@@ -767,8 +707,6 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
         df.to_csv(opt_path + "process_evaluation" + char_ + ".csv")
 
     elif task == "solvent_process":
-        weights = [0.60171625, 0.44746581, 0.22374001, 0.54585274, 0.33455037]
-
         " # Prepare the solvent set for matching "
         df_train = pd.read_csv("../data/solvent/data_for_modeling.csv")
         df_screen = pd.read_csv("../data/solvent/data_all.csv")
@@ -794,7 +732,7 @@ def main(task, model_spec, nonlinear_state=True, error_constr=False):
         ideal_alias = df_ideal["alias"].tolist()
 
         " # Perform molecular mapping "
-        for w in [None]:  # , weights
+        for w in [None]:
             optimal_indexes = []
             A, F = [], []
             for (sol_index, x) in enumerate(res.X):

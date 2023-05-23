@@ -31,9 +31,9 @@ def get_x_0(params, prop_scaler=None):
             x_0 = [
                 [1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 75, 4, 3.5, 3, 12, 0.6, 3.5, 3]]
 
-    if prop_scaler is None: # surrogate modeling
+    if prop_scaler is None:  # surrogate modeling
         return x_0
-    else: # surrogate optimization
+    else:  # surrogate optimization
         x_0 = get_Tensor(prop_scaler.transform(x_0))
         return x_0
 
@@ -52,32 +52,6 @@ def get_act(type):
             "sigmoid": nn.Sigmoid(), "softplus": nn.Softplus(), "tanh": nn.Tanh()}
     return acts[type]
 
-
-# class FNN_model(nn.Module):
-#     def __init__(self, params, n_layer, n_neuron, act):
-#         nn.Module.__init__(self)
-#         self.params = params
-#         self.n_layer = n_layer
-#         n_in, n_hid, n_out = n_neuron
-#         if self.n_layer >= 1:
-#             self.l1 = nn.Linear(n_in, n_hid)
-#         if self.n_layer >= 2:
-#             self.l2 = nn.Linear(n_hid, n_hid)
-#         if self.n_layer == 0:
-#             self.l3 = nn.Linear(n_in, n_out)
-#         else:
-#             self.l3 = nn.Linear(n_hid, n_out)
-#         self.act_func = get_act(act) if self.params["model_nonlinear"] else get_act("identity")
-#
-#     def forward(self, input):
-#         if self.n_layer == 0:
-#             output = torch.sigmoid(self.l3(input)) if self.params["out_sig"] else self.l3(input)
-#         else:
-#             output = self.act_func(self.l1(input))
-#             if self.n_layer >= 2:
-#                 output = self.act_func(self.l2(output))
-#             output = torch.sigmoid(self.l3(output)) if self.params["out_sig"] else self.l3(output)
-#         return output
 
 class FNN_model(nn.Module):
     def __init__(self, params, n_layer, n_neuron, act):
@@ -153,7 +127,6 @@ def get_TensorLong(x):
 
 
 def RMSELoss(f, y):
-    # return torch.mean((f - y) ** 2)
     return torch.sqrt(torch.mean((f - y) ** 2))
 
 
@@ -161,10 +134,3 @@ def fit_scaler(matrix):
     scaler = StandardScaler()
     scaler.fit(matrix)
     return scaler
-
-
-# def fake_scaler(x_l, x_u):
-#     scaler = StandardScaler()#MinMaxScaler()
-#     scaler.fit(np.array([x_l, x_u]))
-#     return scaler
-

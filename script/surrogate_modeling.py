@@ -94,7 +94,6 @@ def prepare_dataset(params, df):
 
     items = []
     for i in range(sol_num):
-        # TODO: randomness test, sol_perf[j]
         if params["task"] == "solvent":
             item = Molecule_reader(i, sol_name[i], sol_smiles[i], sol_prop[i], sol_perf[i])
         elif params["task"] == "process":
@@ -138,22 +137,6 @@ def split_data(params, items, test_size=None):
         if params["task"] == "solvent_process":
             shuffle_array(params, solvent_list_train)
     return items_train, items_test
-
-
-# def get_x_0(params):
-#     if params["task"] == "solvent":
-#         x_0 = [[1.642080264, 99.1326, 1026.70949, 161.702975, 1.8902657]] #3.664060664,
-#     elif params["task"] == "process":
-#         if params["column_index"] == "T1":
-#             x_0 = [[75, 4, 3.5, 3]]
-#         elif params["column_index"] == "T2":
-#             x_0 = [[12, 0.6, 3.5, 3]]
-#     elif params["task"] == "solvent_process":
-#         if params["column_index"] == "T1":
-#             x_0 = [[1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 75, 4, 3.5, 3]]
-#         elif params["column_index"] == "T2":
-#             x_0 = [[1.642080264, 3.664060664, 99.1326, 1026.70949, 161.702975, 1.8902657, 12, 0.6, 3.5, 3]]
-#     return x_0
 
 
 def get_prop_scaler(params, items_train=None):
@@ -257,8 +240,6 @@ def training(params, model, x_train, y_train, x_test, y_test):
 
     for i in range(params["epoch"]):
         model.train()
-        # optimizer.param_groups[0]["lr"] = 0.01
-        # print(scheduler.optimizer.param_groups[0]['lr'])
 
         f_train = model(x_train)
         loss = criterion(f_train, y_train)
@@ -267,7 +248,6 @@ def training(params, model, x_train, y_train, x_test, y_test):
         optimizer.step()
 
         model.eval()
-        # _, _, _, _ = evaluate_model(params, model, x_train, y_train)
         if params["FNN_task"] == "regression":
             _, _, RMSE_2, R2_2 = evaluate_model(params, model, x_test, y_test)
             early_stopping(RMSE_2)
@@ -481,10 +461,6 @@ def main(task, model_spec=None, nonlinear_state=True):
 
 
 if __name__ == "__main__":
-    # "solvent", "process"
-    # "DIST_C4H8", "RebDuty"
-    # True, False
-
     """ # Problem 1: Solvent Design """
     # main("solvent", ("DIST_C4H8_T1", "regression", "T1"), True)
     # main("solvent", ("RebDuty_T1", "regression", "T1"), True)
@@ -505,10 +481,10 @@ if __name__ == "__main__":
 
     """ # Problem 3: Integrated Solvent and Process Design """
     # " T1 "
-    # main("solvent_process", ("DIST_C4H8_T1", "regression", "T1"), True)
-    # main("solvent_process", ("RebDuty_T1", "regression", "T1"), True)
+    main("solvent_process", ("DIST_C4H8_T1", "regression", "T1"), True)
+    main("solvent_process", ("RebDuty_T1", "regression", "T1"), True)
     # main("solvent_process", ("hasERROR_T1", "classification", "T1"), True)
     # " T2 "
     main("solvent_process", ("DIST_C4H6_T2", "regression", "T2"), True)
-    # main("solvent_process", ("RebDuty_T2", "regression", "T2"), True)
+    main("solvent_process", ("RebDuty_T2", "regression", "T2"), True)
     # main("solvent_process", ("hasERROR_T2", "classification", "T2"), True)

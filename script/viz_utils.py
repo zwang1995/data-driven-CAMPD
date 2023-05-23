@@ -213,12 +213,12 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
     elif params["task"] == "process":
         xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                       "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Reboiler heat duty (×10$^3$ kW)"}
-        ylabel_dict = {"DIST_C4H8_T1": "Predicted purity",
-                       "DIST_C4H6_T2": "Predicted purity",
-                       "RebDuty_T1": "Predicted heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Predicted heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "EDC heat duty (×10$^3$ kW)",
+                       "RebDuty_T2": "SRC heat duty (×10$^3$ kW)"}
+        ylabel_dict = {"DIST_C4H8_T1": "Predicted C$_4$H$_8$ purity",
+                       "DIST_C4H6_T2": "Predicted C$_4$H$_6$ purity",
+                       "RebDuty_T1": "Predicted EDC heat duty (×10$^3$ kW)",
+                       "RebDuty_T2": "Predicted SRC heat duty (×10$^3$ kW)"}
         xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.68, 1),  # extend_xylim(0.48, 1)
                       "DIST_C4H6_T2": extend_xylim(0.68, 1),
                       "RebDuty_T1": extend_xylim(0 / y_scale, 80000 / y_scale),
@@ -368,12 +368,12 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
     if params["task"] == "solvent_process":
         xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                       "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Reboiler heat duty (×10$^3$ kW)"}
-        ylabel_dict = {"DIST_C4H8_T1": "Predicted purity",
-                       "DIST_C4H6_T2": "Predicted purity",
-                       "RebDuty_T1": "Predicted heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Predicted heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "EDC heat duty (×10$^3$ kW)",
+                       "RebDuty_T2": "SRC heat duty (×10$^3$ kW)"}
+        ylabel_dict = {"DIST_C4H8_T1": "Predicted C$_4$H$_8$ purity",
+                       "DIST_C4H6_T2": "Predicted C$_4$H$_6$ purity",
+                       "RebDuty_T1": "Predicted EDC heat duty (×10$^3$ kW)",
+                       "RebDuty_T2": "Predicted SRC heat duty (×10$^3$ kW)"}
         xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.4, 1),  # extend_xylim(0.48, 1)
                       "DIST_C4H6_T2": extend_xylim(0.2, 1),
                       "RebDuty_T1": extend_xylim(0 / y_scale, 200000 / y_scale),
@@ -1562,7 +1562,7 @@ def sol_distribution_d(params, res_main_path, path, model_spec):
                 axes[i, j].set_xlim(xylim_dict[j])
                 axes[i, j].set_ylim(xylim_dict[i + 1])
                 if xystick_dict[j] is not None: axes[i, j].set_xticks(xystick_dict[j])
-                if (xystick_dict[i+1] is not None) and (i != n_col - 1): axes[i, j].set_yticks(xystick_dict[i + 1])
+                if (xystick_dict[i + 1] is not None) and (i != n_col - 1): axes[i, j].set_yticks(xystick_dict[i + 1])
 
             if i == n_col - 1:
                 axes[i, j].hist(Columns[j], bins=15, color="silver", alpha=0.7, data=df)

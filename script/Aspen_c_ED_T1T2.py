@@ -53,7 +53,6 @@ def run_Simulation(Combine_loop, txt_file, start_Index=0):
 
             """ # T1 variables """
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\NSTAGE").Value = NStage_T1
-            # Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\BASIS_D").Value = DistRate
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\BASIS_RR").Value = RR_T1
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\PRES1").Value = TopPres_T1
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Streams\SOLVENT\Input\TOTFLOW\MIXED").Value = \
@@ -66,7 +65,6 @@ def run_Simulation(Combine_loop, txt_file, start_Index=0):
 
             """ # T2 variables """
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\NSTAGE").Value = NStage_T2
-            # Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\BASIS_D").Value = DistRate
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\BASIS_RR").Value = RR_T2
             Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\PRES1").Value = TopPres_T2
             " Constraint: FeedStage = 0.5 * NStage "
@@ -131,7 +129,6 @@ def main():
     NStage_T2_list = SequenceWithEndPoint(8, 20, 2)
     RR_T2_list = SequenceWithEndPoint(0.1, 1, 0.1)
     TopPres_T2_list = SequenceWithEndPoint(2.5, 5, 1.25)
-    # DistRate_list = EvenSpaceListWithEndPoint(50, 50, 10)
     Combine_loop = list(itertools.product(NStage_T1_list, RR_T1_list, TopPres_T1_list, StoF_list,
                                           NStage_T2_list, RR_T2_list, TopPres_T2_list))
     total_run = len(Combine_loop)

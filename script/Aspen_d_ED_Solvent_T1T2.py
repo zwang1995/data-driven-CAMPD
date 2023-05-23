@@ -29,7 +29,6 @@ def run_Simulation(Solvent_list, Combine_loop, txt_file, solvent_Index=0, start_
 
     # print("Initial specification ...")
     # Aspen_Plus.Application.Tree.FindNode("\Data\Components\Specifications\Input\ANAME1\SOLVENT").Value = "C4H6O3"
-    # Aspen_Plus.Application.Tree.FindNode("\Data\Components\Specifications\Input\ANAME1\SOLVENT").Value = "C4H6O3"
     # Aspen_Plus.re_initialization()
     # Aspen_Plus.run_property()
     # Aspen_Plus.check_run_completion()
@@ -65,7 +64,6 @@ def run_Simulation(Solvent_list, Combine_loop, txt_file, solvent_Index=0, start_
                 Input = [NStage_T1, RR_T1, TopPres_T1, StoF_T1, NStage_T2, RR_T2, TopPres_T2]
                 print("#", s_Index, "-", solvent, "|", run_Index, "-", Input)
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\NSTAGE").Value = NStage_T1
-                # Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\BASIS_D").Value = DistRate
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\BASIS_RR").Value = RR_T1
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\ED\Input\PRES1").Value = TopPres_T1
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Streams\SOLVENT\Input\TOTFLOW\MIXED").Value = \
@@ -76,7 +74,6 @@ def run_Simulation(Solvent_list, Combine_loop, txt_file, solvent_Index=0, start_
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Streams\SOLVENT\Input\PRES\MIXED").Value = TopPres_T1 + 0.5
 
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\NSTAGE").Value = NStage_T2
-                # Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\BASIS_D").Value = DistRate
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\BASIS_RR").Value = RR_T2
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\PRES1").Value = TopPres_T2
                 Aspen_Plus.Application.Tree.FindNode(r"\Data\Blocks\RD\Input\FEED_STAGE\FEED2").Value = \
@@ -164,7 +161,8 @@ def main():
 
     # Process optimization
     Solvent_list = ["C5H9NO-D2"]
-    Combine_loop = [[80, 5.829299968910926, 3.500699446263485, 2.5178639696102234, 11, 0.4709906486367485, 3.500388025764173]]
+    Combine_loop = [
+        [80, 5.829299968910926, 3.500699446263485, 2.5178639696102234, 11, 0.4709906486367485, 3.500388025764173]]
 
     # Integrated Solvent and Process Design
     # Solvent_list = ["C5H8O2-D1"]
@@ -173,9 +171,6 @@ def main():
     # Combine_loop = [[80, 6.512088945208033, 3.5254755531139432, 3.6178018690749045, 19, 1.9926309583593629, 3.5196141769059284]]
     # Solvent_list = ["C4H6O3"]
     # Combine_loop = [[80, 9.970795385324887, 3.5071209478229806, 1.7566437360909586, 20, 0.7074567331006457, 3.5007232040747733]]
-
-
-
 
     total_run = len(Combine_loop)
 

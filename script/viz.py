@@ -49,7 +49,7 @@ sol_pro_res_main_path = "../model/solvent_process/archive 02.24"
 " # Predicted purity and duty for Pareto-optimal solutions "  # 3
 # Figure_3a(sol_res_main_path)
 
-Figure_3b(pro_res_main_path, "T1T2")
+# Figure_3b(pro_res_main_path, "T1T2")
 
 # Figure_3c(sol_pro_res_main_path, "T1T2")
 # Figure_3d(sol_pro_res_main_path, "T1T2")

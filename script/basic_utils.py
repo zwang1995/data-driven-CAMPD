@@ -7,7 +7,6 @@ import random
 import pickle
 import numpy as np
 import torch
-# from smt.sampling_methods import FullFactorial, LHS, Random
 
 
 def assign_seed(seed):
@@ -77,30 +76,9 @@ def pickle_load(path):
         return pickle.load(f)
 
 
-def LatinHypercubeSampling(boundary, sampling_num, random_state=42):
-    sampling = LHS(xlimits=np.array(boundary), random_state=random_state)
-    x = sampling(sampling_num)
-    return x
-
-def HybridSampling(boundary, sampling_num_total, random_state=42):
-    np.random.seed(random_state)
-    sampling_num_FFS = 2**len(boundary)
-    sampling_num = int((sampling_num_total-sampling_num_FFS)/2)
-    xlimits = np.array(boundary)
-    sampling_FFS = FullFactorial(xlimits=xlimits)
-    sampling_LHS = LHS(xlimits=xlimits, random_state=random_state)
-    sampling_RS = Random(xlimits=xlimits)
-    x_FFS = sampling_FFS(2**len(boundary)) # n**2
-    x_LHS = sampling_LHS(sampling_num)
-    x_RS = sampling_RS(sampling_num)
-    x = np.concatenate((x_FFS, x_LHS, x_RS))
-    return x
-
-
 def RandomStaticSampling(Combine_loop, sampling_num_total, random_state=42):
     random.seed(random_state)
     return random.choices(Combine_loop, k=sampling_num_total)
-
 
 
 def Euclidean_distance(vec, weights=None):
@@ -154,7 +132,6 @@ def tanh(z):
 def get_AC(func):
     ACs = {"elu": np.vectorize(elu), "sigmoid": sigmoid, "softplus": softplus, "tanh": tanh, "identity": identity}
     return ACs[func]
-
 
 # def softmax(x):
 #     f_x = np.exp(x) / np.sum(np.exp(x))

@@ -60,7 +60,6 @@ def get_param(task=None, model_spec=("RebDuty_T1", "regression", "T1"), nonlinea
             elif column_index == "T2":
                 params["data_file"] = params["main_in_path"] + "RecoveryColumn_NMP.csv"
 
-
             if params["FNN_task"] == "classification": params["lr"] = 0.02
 
             if params["FNN_task"] == "regression":
@@ -153,7 +152,7 @@ def get_param(task=None, model_spec=("RebDuty_T1", "regression", "T1"), nonlinea
 def get_hyper_comb(params):
     HLayer_list = SequenceWithEndPoint(1, 2, 1)
     if params["task"] == "solvent":
-        NHid_list = SequenceWithEndPoint(1, 4, 1) # limit model complexity
+        NHid_list = SequenceWithEndPoint(1, 4, 1)  # limit model complexity
     elif params["task"] == "process":
         NHid_list = SequenceWithEndPoint(1, 16, 1)
     elif params["task"] == "solvent_process":
@@ -161,4 +160,3 @@ def get_hyper_comb(params):
     Act_list = ["elu", "sigmoid", "softplus", "tanh"] if params["model_nonlinear"] else ["identity"]
     Combine_loop = list(itertools.product(HLayer_list, NHid_list, Act_list))
     return Combine_loop
-
