@@ -6,8 +6,9 @@ This repository contains the data and scripts involved in the manuscript:
 
 ## Requirements 
 ### Library (Python 3.6)
-* [PyTorch](https://pytorch.org/): development of ML models
+* [PyTorch](https://pytorch.org/): data-driven modeling
 * [scikit-learn](https://scikit-learn.org/stable/): data processing
+* [pymoo](https://pymoo.org/): multi-objective optimization 
 * [matplotlib](https://matplotlib.org/): visualization
 
 ### Software
