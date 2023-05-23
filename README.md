@@ -8,7 +8,7 @@ This repository contains the data and scripts involved in the manuscript:
 ### Library (Python 3.6)
 * [PyTorch](https://pytorch.org/): development of ML models
 * [scikit-learn](https://scikit-learn.org/stable/): data processing
-* [matplotlib](https://matplotlib.org/) & [seaborn](https://seaborn.pydata.org/): visualization
+* [matplotlib](https://matplotlib.org/): visualization
 
 ### Software
 * Aspen Plus: chemical process simulation
