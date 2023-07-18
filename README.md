@@ -1,4 +1,4 @@
-# Data-Driven Integrated Solvent and Process Design
+# Data-Driven Integrated Molecular and Process Design
 
 This repository contains the data and scripts involved in the manuscript:
 
