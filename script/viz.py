@@ -1,4 +1,4 @@
-# Created at 25 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 25 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Visualization for data distribution, model performance, and optimization results
 
 from viz_utils import *
@@ -9,8 +9,8 @@ from viz_utils import *
 # * Figure_xc/d: graphs for "Integrated Solvent and Process Design"
 
 sol_res_main_path = "../model/solvent/archive 01.30"
-pro_res_main_path = "../model/process/archive 02.13"
-sol_pro_res_main_path = "../model/solvent_process/archive 02.24"
+pro_res_main_path = "../model/process/archive 07.10"
+sol_pro_res_main_path = "../model/solvent_process/archive 07.11"
 
 " # Linear correlation and distribution between inputs and outputs "
 # Figure_0a() # task = "solvent"
@@ -67,9 +67,13 @@ sol_pro_res_main_path = "../model/solvent_process/archive 02.24"
 # Figure_5d(sol_pro_res_main_path) # pareto front
 
 " # TAC "
-# Figure_6c1()
-# Figure_6c2()
+Figure_6c1()
+# Figure_6c2() # deprecated
+
+
+" # Training, Interpolation, and Extrapolation "
+# Figure_7()
 
 " # Statistical plot of solvent properties "
-# Figure_xa()
-# Figure_xb()
+# Figure_xa() # deprecated
+# Figure_xb() # deprecated

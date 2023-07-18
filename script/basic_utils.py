@@ -1,7 +1,9 @@
-# Created at 19 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 19 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Basic functionalities to support this project
 
 import os
+import sys
+import time
 import csv
 import random
 import pickle
@@ -19,6 +21,26 @@ def shuffle_array(params, array):
     assign_seed(params["seed"])
     random.shuffle(array)
     return array
+
+
+class Logger(object):
+    def __init__(self, log_file, stream=sys.stdout):
+        self.terminal = stream
+        self.log_file = log_file
+        with open(log_file, "w") as f:
+            f.write("")
+
+    def write(self, massage):
+        self.terminal.write(massage)
+        with open(self.log_file, "a") as f:
+            f.write(massage)
+
+    def flush(self):
+        pass
+
+
+def timestamp():
+    print(f"\n ----------------- DATETIME {time.ctime(time.time())} ----------------- \n", flush=True)
 
 
 def create_directory(path):
@@ -109,11 +131,6 @@ def elu(z):
     return z if z > 0 else np.exp(z) - 1
 
 
-# def relu(z):
-#     z = z.astype(float)
-#     return np.maximum(z, 0)
-
-
 def sigmoid(z):
     z = z.astype(float)
     return (1 / (1 + np.exp(-z)))
@@ -132,7 +149,3 @@ def tanh(z):
 def get_AC(func):
     ACs = {"elu": np.vectorize(elu), "sigmoid": sigmoid, "softplus": softplus, "tanh": tanh, "identity": identity}
     return ACs[func]
-
-# def softmax(x):
-#     f_x = np.exp(x) / np.sum(np.exp(x))
-#     return f_x

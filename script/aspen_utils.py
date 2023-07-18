@@ -1,4 +1,4 @@
-# Created at 12 May 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 12 May 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Utils for Aspen Plus COM interface
 
 import os
@@ -52,7 +52,7 @@ class Aspen_Plus_Interface():
             time.sleep(1)
             times += 1
             if times >= time_limit:
-                print("Time Limit Exceeded")
+                print("* Exceed time limit")
                 self.Application.Engine.Stop
                 break
 

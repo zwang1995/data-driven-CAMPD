@@ -1,19 +1,18 @@
-# Created at 05 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 05 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Data-driven modeling for Extractive Distillation Processes using Artificial Neural Networks
 
+import joblib
 import json
 import pandas as pd
-from copy import deepcopy
 
 from fnn_utils import *
 from param_utils import *
 from basic_utils import *
-import torch
 
+from copy import deepcopy
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn import metrics
-import joblib, time
 
 
 def clean_data(params, df):
@@ -21,7 +20,6 @@ def clean_data(params, df):
         df = df[~df["hasERROR"]]
         df = df[df["DIST_C4H8_T1"] >= 0.5]
         df = df[df["DIST_C4H8_T1"] + df["DIST_C4H6_T1"] >= 0.99]
-
         df = df[df["RHO_Aspen"] <= 1200]
         df = df[df["MUMX_Aspen"] <= 3]
 
@@ -39,45 +37,6 @@ def clean_data(params, df):
         elif params["column_index"] == "T2":
             df = df[~df["hasERROR_T2"]]
             df = df[df["DIST_C4H6_T2"] >= threshold]
-
-    elif params["task"] == "solvent_process":
-        threshold = 0.5
-        if params["column_index"] == "T1":
-            df = df[df["DIST_C4H8_T1"] > 0.1]
-            df = df[df["RebDuty_T1"] > 0]
-            df = df[~df["hasERROR_T1"]]
-            df = df.reset_index(drop=True)
-            INDEX = []
-            for i in range(130):
-                max_ind = np.where((df["Solvent_Index"] == i) &
-                                   (df["NStage"] == 80) &
-                                   (df["RR"] == 10) &
-                                   (df["TopPres"] == 6) &
-                                   (df["StoF"] == 8))
-                if len(max_ind[0]) == 0:
-                    max_ind = np.where((df["Solvent_Index"] == i) &
-                                       (df["NStage"] == 75) &
-                                       (df["RR"] == 10) &
-                                       (df["TopPres"] == 6) &
-                                       (df["StoF"] == 8))
-                max_duty = df.loc[max_ind]["RebDuty_T1"].values[0]
-                ind = np.where((df["Solvent_Index"] == i) & (df["RebDuty_T1"] > max_duty))[0]
-                if len(ind) > 0: INDEX.extend(ind)
-
-                if i in [85, 104, 110]:
-                    add_ind = np.where((df["Solvent_Index"] == i) & (df["DIST_C4H8_T1"] < 0.5))[0]
-                    INDEX.extend(add_ind)
-                elif i == 123:
-                    add_ind = np.where((df["Solvent_Index"] == i) & (df["DIST_C4H8_T1"] < 0.55))[0]
-                    INDEX.extend(add_ind)
-            INDEX = list(set(INDEX))
-            df = df.drop(index=INDEX)
-            df = df.reset_index(drop=True)
-
-        elif params["column_index"] == "T2":
-            df = df[~df["hasERROR_T2"]]
-            # df = df[df["DIST_C4H6_T2"] >= threshold]
-            # df = df[df["RebDuty_T2"] <= 5000]
 
     df = df.reset_index(drop=True)
     return df
@@ -105,9 +64,6 @@ def prepare_dataset(params, df):
 
 
 def split_data(params, items, test_size=None):
-    # if params["task"] == "process":
-    #     items_train, items_test = train_test_split(items, test_size=params["test_size"], random_state=params["seed"],
-    #                                                stratify=[item.performance for item in items])
     if params["task"] != "solvent_process":
         if test_size:
             items_train, items_test = train_test_split(items, test_size=test_size, random_state=params["seed"])
@@ -116,24 +72,15 @@ def split_data(params, items, test_size=None):
                                                        random_state=params["seed"])
     else:
         df_solvent = pd.read_csv(params["main_in_path"] + "solvent_list.csv")
-        # df_solvent_train = df_solvent[df_solvent["set"] == "train"]
-        # df_solvent_test = df_solvent[df_solvent["set"] == "test"]
-        # solvent_list_train = df_solvent_train["alias"].values
-        # solvent_list_test = df_solvent_test["alias"].values
-        # print(solvent_list_train, solvent_list_test)
         global solvent_list_train
         solvent_list = df_solvent["alias"].values
         solvent_list_train, solvent_list_test = train_test_split(solvent_list, test_size=params["test_size"],
                                                                  random_state=params["seed"])
-        # print(solvent_list_train)
-        # print(solvent_list_train, solvent_list_test)
-
         items_train = [item for item in items if item.name in solvent_list_train]
         items_test = [item for item in items if item.name in solvent_list_test]
     if params["shuffle_state"]:
         shuffle_array(params, items_train)
         shuffle_array(params, items_test)
-        # print([item.name for item in items_train])
         if params["task"] == "solvent_process":
             shuffle_array(params, solvent_list_train)
     return items_train, items_test
@@ -275,12 +222,7 @@ def training(params, model, x_train, y_train, x_test, y_test):
 
 
 def optimize_hyper(params, model, items_train, save_model=False):
-    # print(model.state_dict()["l1.weight"].dtype)
-    # initial_model(model)
-    # print(model.state_dict()["l1.weight"])
-
     def get_X_and_Y_for_S_P(i):
-        """ only apply for task 'solvent_process' """
         kf = KFold(n_splits=5)
         for j, (solvent_train, solvent_test) in enumerate(kf.split(solvent_list_train)):
             if i == j:
@@ -299,7 +241,6 @@ def optimize_hyper(params, model, items_train, save_model=False):
     for i, (cv_index_train, cv_index_test) in enumerate(kf.split(X_train)):
         if params["model_initial_state"]:
             initial_model(params, model)
-        # print(cv_index_train, cv_index_test)
         if params["task"] != "solvent_process":
             x_train_cv = X_train[cv_index_train]
             y_train_cv = Y_train[cv_index_train]
@@ -362,6 +303,12 @@ def save_predictions(params, final_model, file):
 
 def main(task, model_spec=None, nonlinear_state=True):
     params = get_param(task, model_spec, nonlinear_state, modeling_state=True)
+    log_file = params["log_file"]
+    with open(log_file, "w") as f:
+        f.write("")
+    sys.stdout = Logger(log_file)
+    sys.stderr = Logger(log_file)
+    timestamp()
     if params["FNN_task"] == "classification":
         if (params["column_index"] == "T1") and (not params["class_train_state_T1"]): return
         if (params["column_index"] == "T2") and (not params["class_train_state_T2"]): return
@@ -376,17 +323,20 @@ def main(task, model_spec=None, nonlinear_state=True):
 
     " # Preparation "
     df = pd.read_csv(params["data_file"])
-    # prop_scaler trained based on all samples for task "process"
+
+    # prop_scaler trained based on all samples for process model
     items = prepare_dataset(params, df)
     print(f"-> Original dataset size: {len(items)}", flush=True)
     if params["task"] == "process" or params["task"] == "solvent_process":
         params["prop_scaler"] = get_prop_scaler(params, items)
+
     # data preprocessing
     if params["FNN_task"] == "regression":
         df = clean_data(params, df)
         print(f"-> Cleaned dataset size: {len(df)}", flush=True)
     elif params["FNN_task"] == "classification":
         df.loc[:, params["perf_label"][0]].replace({False: 1, True: 0}, inplace=True)  # Positive = correct simu
+
     # data preparation
     df.to_csv(params["used_data_file"])
     items = prepare_dataset(params, df)
@@ -399,24 +349,28 @@ def main(task, model_spec=None, nonlinear_state=True):
     params["items_train"], params["items_test"] = items_train, items_test = split_data(params, items)
     n_in, n_out = len(params["prop_label"]), len(params["perf_label"])
 
-    " # Hyperparameter Optimization "
+    # hyperparameter optimization
     hyper_combs = get_hyper_comb(params)
     hyper_loss, hyper_model = {}, {}
     write_csv(params["hyper_opt_his"],
               ["hyper", "ave_epoch", "epoch", "ave_indicator", "indicator", "ave_score", "socre"], "w")
     for hyper_comb in hyper_combs:
+        time_train_strat = time.time()
         n_layer, n_hid, act = hyper_comb
         model = FNN_model(params, n_layer, (n_in, n_hid, n_out), act)
         epochs, Is, scores, model_params = optimize_hyper(params, model, items_train, save_model=False)
         hyper_loss[hyper_comb] = np.average(scores)
         hyper_model[hyper_comb] = model_params
-        print([hyper_comb, np.average(epochs), np.average(Is, axis=0), np.average(scores), scores], flush=True)
+        time_train_end = time.time()
+        time_train = time_train_end - time_train_strat
+        print([hyper_comb, np.average(epochs), np.average(Is, axis=0), np.average(scores), scores], time_train,
+              flush=True)
         write_csv(params["hyper_opt_his"], [hyper_comb,
                                             np.average(epochs), epochs,
                                             np.average(Is, axis=0), Is,
                                             np.average(scores), scores], "a")
 
-    " # Model Training "
+    # model training
     opt_hyper = min(hyper_loss, key=hyper_loss.get)
     print(f"-> Optimal hypers & loss: {opt_hyper}, {hyper_loss[opt_hyper]}", flush=True)
     write_list_to_txt(params["best_hyper_file"], [opt_hyper, hyper_loss[opt_hyper]])
@@ -444,7 +398,6 @@ def main(task, model_spec=None, nonlinear_state=True):
         print(prefix, params["perf_scaler"].inverse_transform(opt_model(x_0).detach().numpy())[0], flush=True) \
             if params["perf_scaler_state"] else print(prefix, opt_model(x_0).detach().numpy()[0], flush=True)
         torch.save(opt_model.state_dict(), "".join([params["out_path"], "model_", str(model_index), ".pt"]))
-        # print(opt_model.state_dict())
         MAE_1, MSE_1, RMSE_1, R2_1 = evaluate_model(params, opt_model, X_train, y_train)
         MAE_2, MSE_2, RMSE_2, R2_2 = evaluate_model(params, opt_model, X_test, y_test)
         results = [MAE_1, MSE_1, RMSE_1, R2_1, MAE_2, MSE_2, RMSE_2, R2_2]
@@ -454,37 +407,25 @@ def main(task, model_spec=None, nonlinear_state=True):
         save_predictions(params, opt_model, result_file)
         model_index += 1
 
-    write_string_to_txt(params["logging_file"], "")
     time_end = time.time()
     print("-> Time cost:", time_end - time_start, flush=True)
+    timestamp()
     print("", flush=True)
 
 
 if __name__ == "__main__":
-    """ # Problem 1: Solvent Design """
-    # main("solvent", ("DIST_C4H8_T1", "regression", "T1"), True)
-    # main("solvent", ("RebDuty_T1", "regression", "T1"), True)
+    # 1: Data-driven Models for Solvent
+    # main("solvent", ("DIST_C4H8_T1", "regression", "T1"))
+    # main("solvent", ("RebDuty_T1", "regression", "T1"))
 
-    """ # Problem 2: Process Optimization """
-    # " T1 "
-    # main("process", ("DIST_C4H8_T1", "regression", "T1"), True)
-    # time.sleep(100)
-    # main("process", ("RebDuty_T1", "regression", "T1"), True)
-    # time.sleep(100)
-    # main("process", ("hasERROR_T1", "classification", "T1"), True)
-    # " T2 "
-    # main("process", ("DIST_C4H6_T2", "regression", "T2"), True)
-    # time.sleep(100)
-    # main("process", ("RebDuty_T2", "regression", "T2"), True)
-    # time.sleep(100)
-    # main("process", ("hasERROR_T2", "classification", "T2"), True)
+    # 2: Data-driven Models for Process
+    # main("process", ("DIST_C4H8_T1", "regression", "T1"))
+    # main("process", ("RebDuty_T1", "regression", "T1"))
+    # main("process", ("DIST_C4H6_T2", "regression", "T2"))
+    # main("process", ("RebDuty_T2", "regression", "T2"))
 
-    """ # Problem 3: Integrated Solvent and Process Design """
-    # " T1 "
-    main("solvent_process", ("DIST_C4H8_T1", "regression", "T1"), True)
-    main("solvent_process", ("RebDuty_T1", "regression", "T1"), True)
-    # main("solvent_process", ("hasERROR_T1", "classification", "T1"), True)
-    # " T2 "
-    main("solvent_process", ("DIST_C4H6_T2", "regression", "T2"), True)
-    main("solvent_process", ("RebDuty_T2", "regression", "T2"), True)
-    # main("solvent_process", ("hasERROR_T2", "classification", "T2"), True)
+    # 3: Data-driven Models for Solvent and Process
+    main("solvent_process", ("DIST_C4H8_T1", "regression", "T1"))
+    main("solvent_process", ("RebDuty_T1", "regression", "T1"))
+    main("solvent_process", ("DIST_C4H6_T2", "regression", "T2"))
+    main("solvent_process", ("RebDuty_T2", "regression", "T2"))

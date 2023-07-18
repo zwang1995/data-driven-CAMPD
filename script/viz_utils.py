@@ -1,5 +1,7 @@
-# Created at 25 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 25 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Utils used for visualization
+
+import itertools
 
 import scipy.stats as stats
 from param_utils import *
@@ -7,16 +9,12 @@ from basic_utils import *
 from surrogate_modeling import clean_data
 from surrogate_optimization import OptimProblem
 
-import time
-import itertools
-import joblib
-
 import numpy as np
 import pandas as pd
 from scipy.stats import gaussian_kde
 from sklearn.metrics import mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter, FFMpegWriter
+from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib import font_manager
 
 pd.set_option("display.max_columns", None)
@@ -43,7 +41,8 @@ plt.rcParams["savefig.bbox"] = "tight"
 plt.rcParams["savefig.transparent"] = True
 plt.rcParams["agg.path.chunksize"] = 10000
 
-mode = "ppt"
+mode = "doc"
+print(f"Mode: {mode}")
 
 if mode == "doc":
     plt.rcParams["font.size"] = "9"
@@ -77,7 +76,7 @@ def correlation_analysis(params, df, path):
                        "CPMX_Aspen": "Heat capacity (kJ/kmol K)",
                        "MUMX_Aspen": "Viscosity (cP)"}
         ylabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
-                       "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "Reboiler heat duty (MW)"}
         xlim_dict = {"S_Aspen": extend_xylim(0.8, 1.8),
                      "MW_Aspen": extend_xylim(60, 180),
                      "RHO_Aspen": extend_xylim(600, 1800),
@@ -92,10 +91,10 @@ def correlation_analysis(params, df, path):
                        "StoF": "Solvent-to-feed ratio"}
         if params["column_index"] == "T1":
             ylabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
-                           "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)"}
+                           "RebDuty_T1": "Reboiler heat duty (MW)"}
         elif params["column_index"] == "T2":
             ylabel_dict = {"DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                           "RebDuty_T2": "Reboiler heat duty (×10$^3$ kW)"}
+                           "RebDuty_T2": "Reboiler heat duty (MW)"}
         xlim_dict = {"S_Aspen": extend_xylim(0.8, 1.8),
                      "MW_Aspen": extend_xylim(60, 180),
                      "RHO_Aspen": extend_xylim(600, 1800),
@@ -116,10 +115,10 @@ def correlation_analysis(params, df, path):
                        "StoF": "Solvent-to-feed ratio"}
         if params["column_index"] == "T1":
             ylabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
-                           "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)"}
+                           "RebDuty_T1": "Reboiler heat duty (MW)"}
         elif params["column_index"] == "T2":
             ylabel_dict = {"DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                           "RebDuty_T2": "Reboiler heat duty (×10$^3$ kW)"}
+                           "RebDuty_T2": "Reboiler heat duty (MW)"}
 
     if params["task"] == "solvent":
         his_file = path + "his.txt"
@@ -159,7 +158,7 @@ def Figure_0a():
         and process performance y and visualization for 126 candidates """
     params = get_param("solvent", ("RebDuty", "regression", "T1"))
     df = pd.read_csv(params["data_file"])
-    sub_viz_path = params["viz_path"] + "corr_ana/"
+    sub_viz_path = params["viz_path"] + mode + "/corr_ana/"
     create_directory(sub_viz_path)
     df = clean_data(params, df)
     correlation_analysis(params, df, sub_viz_path)
@@ -172,7 +171,7 @@ def Figure_0b(column_index):
     params = get_param("process", ("RebDuty_T1", "regression", column_index))
     df = pd.read_csv(params["data_file"])
     print(len(df))
-    sub_viz_path = params["viz_path"] + "corr_ana/"
+    sub_viz_path = params["viz_path"] + mode + "/corr_ana/"
     create_directory(sub_viz_path)
     df = clean_data(params, df)
     print(len(df))
@@ -186,7 +185,7 @@ def Figure_0c(column_index):
     params = get_param("solvent_process", ("RebDuty_T1", "regression", column_index))
     df = pd.read_csv(params["data_file"])
     print(len(df))
-    sub_viz_path = params["viz_path"] + "corr_ana/"
+    sub_viz_path = params["viz_path"] + mode + "/corr_ana/"
     create_directory(sub_viz_path)
     df = clean_data(params, df)
     print(len(df))
@@ -202,23 +201,23 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
     y_scale = 1000
     if params["task"] == "solvent":
         xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
-                       "RebDuty_T1": "Reboiler heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "Reboiler heat duty (MW)"}
         ylabel_dict = {"DIST_C4H8_T1": "Predicted purity",
-                       "RebDuty_T1": "Predicted heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "Predicted heat duty (MW)"}
         xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.48, 1.02),  # extend_xylim(0.48, 1)
                       "RebDuty_T1": extend_xylim(8000 / y_scale, 52000 / y_scale)}
         diagonal_dict = {"DIST_C4H8_T1": (0, 2), "RebDuty_T1": (0 / y_scale, 60000 / y_scale)}
         unit_dict = {"DIST_C4H8_T1": "",
-                     "RebDuty_T1": " (×10$^3$ kW)"}
+                     "RebDuty_T1": " MW"}
     elif params["task"] == "process":
         xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                       "RebDuty_T1": "EDC heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "SRC heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "EDC heat duty (MW)",
+                       "RebDuty_T2": "SRC heat duty (MW)"}
         ylabel_dict = {"DIST_C4H8_T1": "Predicted C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "Predicted C$_4$H$_6$ purity",
-                       "RebDuty_T1": "Predicted EDC heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Predicted SRC heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "Predicted EDC heat duty (MW)",
+                       "RebDuty_T2": "Predicted SRC heat duty (MW)"}
         xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.68, 1),  # extend_xylim(0.48, 1)
                       "DIST_C4H6_T2": extend_xylim(0.68, 1),
                       "RebDuty_T1": extend_xylim(0 / y_scale, 80000 / y_scale),
@@ -227,8 +226,12 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
                          "DIST_C4H6_T2": (0, 2), "RebDuty_T2": (-10000 / y_scale, 40000 / y_scale)}
         unit_dict = {"DIST_C4H8_T1": "",
                      "DIST_C4H6_T2": "",
-                     "RebDuty_T1": " (×10$^3$ kW)",
-                     "RebDuty_T2": " (×10$^3$ kW)"}
+                     "RebDuty_T1": " MW",
+                     "RebDuty_T2": " MW"}
+        xticks_dict = {"DIST_C4H8_T1": np.arange(0.7, 1.0, 0.1),
+                       "DIST_C4H6_T2": np.arange(0.7, 1.0, 0.1),
+                       "RebDuty_T1": np.arange(0, 90, 20),
+                       "RebDuty_T2": np.arange(5, 30, 5)}
 
     l, perf = model_spec
     res_path = res_main_path + "/" + perf + "/"
@@ -246,7 +249,7 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
     x_low, x_up = diagonal_dict[perf]
 
     if mode == "doc":
-        x_offset = 0.1 if "DIST" in perf else 0
+        x_offset = 0.1
         x_text_MAE_train, y_text_MAE_train = xy_low + (0.05 + x_offset) * (xy_up - xy_low), \
                                              xy_low + 0.7 * (xy_up - xy_low)
         x_text_R2_train, y_text_R2_train = xy_low + (0.05 + x_offset) * (xy_up - xy_low), \
@@ -256,7 +259,7 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
         x_text_R2_test, y_text_R2_test = xy_low + (0.40 + x_offset) * (xy_up - xy_low), \
                                          xy_low + 0.1 * (xy_up - xy_low)
     elif mode == "ppt":
-        x_offset = 0.1 if "DIST" in perf else 0
+        x_offset = 0.1
         x_text_MAE_train, y_text_MAE_train = xy_low + (0.02 + x_offset) * (xy_up - xy_low), \
                                              xy_low + 0.71 * (xy_up - xy_low)
         x_text_R2_train, y_text_R2_train = xy_low + (0.02 + x_offset) * (xy_up - xy_low), \
@@ -287,6 +290,9 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
             plt.ylabel(ylabel_dict[perf], size=label_size)
             plt.xlim(xy_low, xy_up)
             plt.ylim(xy_low, xy_up)
+            if xticks_dict[perf] is not None:
+                plt.xticks(xticks_dict[perf])
+                plt.yticks(xticks_dict[perf])
             plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
 
             x_offset = 0.1 if "DIST" in perf else 0
@@ -343,6 +349,9 @@ def parity_a(params, res_main_path, path, model_spec, if_merge=False):
         plt.ylabel(ylabel_dict[perf], size=label_size)
         plt.xlim(xy_low, xy_up)
         plt.ylim(xy_low, xy_up)
+        if xticks_dict[perf] is not None:
+            plt.xticks(xticks_dict[perf])
+            plt.yticks(xticks_dict[perf])
         plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
 
         x_offset = 0.04 if "DIST" in perf else 0
@@ -368,12 +377,12 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
     if params["task"] == "solvent_process":
         xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "C$_4$H$_6$ purity",
-                       "RebDuty_T1": "EDC heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "SRC heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "EDC heat duty (MW)",
+                       "RebDuty_T2": "SRC heat duty (MW)"}
         ylabel_dict = {"DIST_C4H8_T1": "Predicted C$_4$H$_8$ purity",
                        "DIST_C4H6_T2": "Predicted C$_4$H$_6$ purity",
-                       "RebDuty_T1": "Predicted EDC heat duty (×10$^3$ kW)",
-                       "RebDuty_T2": "Predicted SRC heat duty (×10$^3$ kW)"}
+                       "RebDuty_T1": "Predicted EDC heat duty (MW)",
+                       "RebDuty_T2": "Predicted SRC heat duty (MW)"}
         xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.4, 1),  # extend_xylim(0.48, 1)
                       "DIST_C4H6_T2": extend_xylim(0.2, 1),
                       "RebDuty_T1": extend_xylim(0 / y_scale, 200000 / y_scale),
@@ -382,11 +391,11 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
                          "DIST_C4H6_T2": (0, 2), "RebDuty_T2": (-5000 / y_scale, 55000 / y_scale)}
         unit_dict = {"DIST_C4H8_T1": "",
                      "DIST_C4H6_T2": "",
-                     "RebDuty_T1": " (×10$^3$ kW)",
-                     "RebDuty_T2": " (×10$^3$ kW)"}
+                     "RebDuty_T1": " MW",
+                     "RebDuty_T2": " MW"}
         xticks_dict = {"DIST_C4H8_T1": np.arange(0.4, 1.1, 0.1),
                        "DIST_C4H6_T2": np.arange(0.2, 1.1, 0.2),
-                       "RebDuty_T1": None,
+                       "RebDuty_T1": np.arange(0, 210, 50),
                        "RebDuty_T2": np.arange(0, 60, 10)}
 
     l, perf = model_spec
@@ -405,11 +414,11 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
     x_low, x_up = diagonal_dict[perf]
 
     if mode == "doc":
-        x_offset = 0.2 if "DIST" in perf else 0.1
+        x_offset = 0.15
         x_text_MAE, y_text_MAE = xy_low + x_offset * (xy_up - xy_low), xy_low + 0.85 * (xy_up - xy_low)
         x_text_R2, y_text_R2 = xy_low + x_offset * (xy_up - xy_low), xy_low + 0.78 * (xy_up - xy_low)
     elif mode == "ppt":
-        x_offset = 0.2 if "DIST" in perf else 0.1
+        x_offset = 0.15
         x_text_MAE, y_text_MAE = xy_low + x_offset * (xy_up - xy_low), xy_low + 0.86 * (xy_up - xy_low)
         x_text_R2, y_text_R2 = xy_low + x_offset * (xy_up - xy_low), xy_low + 0.78 * (xy_up - xy_low)
 
@@ -446,7 +455,9 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
             plt.ylabel(ylabel_dict[perf], size=label_size)
             plt.xlim(xy_low, xy_up)
             plt.ylim(xy_low, xy_up)
-            if xticks_dict[perf] is not None: plt.xticks(xticks_dict[perf])
+            if xticks_dict[perf] is not None:
+                plt.xticks(xticks_dict[perf])
+                plt.yticks(xticks_dict[perf])
             plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
             s1 = "MAE = " + str("{:.4f}".format(MAE_train[i] / y_scale)) + unit_dict[perf]
             plt.text(x_text_MAE, y_text_MAE, s1, c="red", fontsize=text_size)
@@ -462,7 +473,9 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
             plt.ylabel(ylabel_dict[perf], size=label_size)
             plt.xlim(xy_low, xy_up)
             plt.ylim(xy_low, xy_up)
-            if xticks_dict[perf] is not None: plt.xticks(xticks_dict[perf])
+            if xticks_dict[perf] is not None:
+                plt.xticks(xticks_dict[perf])
+                plt.yticks(xticks_dict[perf])
             plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
             s3 = "MAE = " + str("{:.4f}".format(MAE_test[i] / y_scale)) + unit_dict[perf]
             plt.text(x_text_MAE, y_text_MAE, s3, c="blue", fontsize=text_size)
@@ -519,7 +532,9 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
         plt.ylabel(ylabel_dict[perf], size=label_size)
         plt.xlim(xy_low, xy_up)
         plt.ylim(xy_low, xy_up)
-        if xticks_dict[perf] is not None: plt.xticks(xticks_dict[perf])
+        if xticks_dict[perf] is not None:
+            plt.xticks(xticks_dict[perf])
+            plt.yticks(xticks_dict[perf])
         plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
         s1 = "MAE = " + str("{:.4f}".format(MAE_train_mean / y_scale)) + unit_dict[perf]
         plt.text(x_text_MAE, y_text_MAE, s1, c="red", fontsize=text_size)
@@ -535,7 +550,9 @@ def parity_c(params, res_main_path, path, model_spec, if_merge=False):
         plt.ylabel(ylabel_dict[perf], size=label_size)
         plt.xlim(xy_low, xy_up)
         plt.ylim(xy_low, xy_up)
-        if xticks_dict[perf] is not None: plt.xticks(xticks_dict[perf])
+        if xticks_dict[perf] is not None:
+            plt.xticks(xticks_dict[perf])
+            plt.yticks(xticks_dict[perf])
         plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
         s3 = "MAE = " + str("{:.4f}".format(MAE_test_mean / y_scale)) + unit_dict[perf]
         plt.text(x_text_MAE, y_text_MAE, s3, c="blue", fontsize=text_size)
@@ -588,7 +605,7 @@ def Figure_1a(res_main_path, merge_state=False):
         for perf in ["DIST_C4H8_T1", "RebDuty_T1"]:
             params = get_param("solvent", (perf, "regression", "T1"))
             model_spec = (l, perf)
-            sub_viz_path = create_directory(params["viz_path"] + "1_parity/")
+            sub_viz_path = create_directory(params["viz_path"] + mode + "/1_parity/")
             parity_a(params, res_main_path, sub_viz_path, model_spec,
                      merge_state)  # True: five plots for five models; False: one plot
     plt.close()
@@ -598,7 +615,7 @@ def Figure_1b(res_main_path, ci, merge_state=False):
     """ # Generate the parity plots for ML models """
     print("Figure 1b:", ci, merge_state, flush=True)
     params = get_param("process")
-    sub_viz_path = create_directory(params["viz_path"] + "1_parity/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/1_parity/")
     for l in ["nonlinear"]:
         OFs = ["DIST_C4H8_T1", "RebDuty_T1"] if ci == "T1" else ["DIST_C4H6_T2", "RebDuty_T2"]
         for perf in OFs:
@@ -612,7 +629,7 @@ def Figure_1c(res_main_path, ci, merge_state=False):
     """ # Generate the parity plots for ML models """
     print("Figure 1c:", ci, merge_state, flush=True)
     params = get_param("solvent_process")
-    sub_viz_path = create_directory(params["viz_path"] + "1_parity/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/1_parity/")
     for l in ["nonlinear"]:
         OFs = ["DIST_C4H8_T1", "RebDuty_T1"] if ci == "T1" else ["DIST_C4H6_T2", "RebDuty_T2"]
         for perf in OFs:
@@ -642,18 +659,18 @@ def pareto_vs_iteration_a(params, res_main_path, path, model_spec, if_overlap=Fa
         xticks = None
     elif params["task"] == "process":
         if ci == "T1T2":
-            iters_dict = {"nonlinear": [1, 4, 7, 10, 12, 20, 60]}
-            xylim_dict = {"nonlinear": (extend_xylim(0.0, 0.01), extend_xylim(-1.6, -0.6))}
+            iters_dict = {"nonlinear": [1, 4, 6, 10, 25, 50, 100]}
+            xylim_dict = {"nonlinear": ((0.6, 1), extend_xylim(-1.6, -0.6))}
             mean, std = 33480.917166413456 + 16338.2463890172, np.sqrt(
                 16933.223558474107 ** 2 + 3612.867089587996 ** 2)
-            xticks = np.arange(0, 0.01, 0.003)
+            xticks = None  # np.arange(0, 0.01, 0.003)
     elif params["task"] == "solvent_process":
         if ci == "T1T2":
-            iters_dict = {"nonlinear": [1, 7, 8, 10, 12, 20, 30, 40, 50]}  # [1, 2, 4, 5, 7, 9, 110]
-            xylim_dict = {"nonlinear": (extend_xylim(0.0, 0.04), extend_xylim(-1.6, -0.4))}
+            iters_dict = {"nonlinear": [1, 6, 7, 10, 20, 30, 40, 50, 75]}  # [1, 2, 4, 5, 7, 9, 110]
+            xylim_dict = {"nonlinear": ((0.5, 1), extend_xylim(-1.1, -0.5))}
             mean, std = 41614.91843103464 + 11911.925773664572, np.sqrt(
                 26906.900856946824 ** 2 + 5994.026928442846 ** 2)
-            xticks = None
+            xticks = np.arange(0.5, 1.05, 0.1)
 
     " # Visualize the Pareto front at several iterations "
     fig = plt.figure()
@@ -728,11 +745,11 @@ def pareto_vs_iteration_d(params, res_main_path, path, model_spec, if_overlap=Fa
     if params["task"] == "solvent_process":
         if ci == "T1T2":
             iters_dict = {"nonlinear": []}  # [1, 2, 4, 5, 7, 9, 110]
-            x_lim = extend_xylim(0.0, 0.08)
-            y_lim = extend_xylim(-1.6, -0.4)
+            x_lim = extend_xylim(0.4, 1)
+            y_lim = extend_xylim(-1.1, -0.5)
             mean, std = 41614.91843103464 + 11911.925773664572, np.sqrt(
                 26906.900856946824 ** 2 + 5994.026928442846 ** 2)
-            xticks = np.arange(0, 0.13, 0.02)
+            # xticks = np.arange(0, 0.13, 0.02)
 
     " # Visualize the Pareto front at several iterations "
     # fig = plt.figure()
@@ -797,7 +814,7 @@ def Figure_2a(res_main_path):
     print("Figure 2a")
     params = get_param("solvent")
     for l, c in itertools.product(["nonlinear"], [None]):
-        sub_viz_path = create_directory(params["viz_path"] + "2_pareto/")
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/2_pareto/")
         pareto_vs_iteration_a(params, res_main_path, sub_viz_path, (l, c, "T1"), True)
     plt.close()
 
@@ -806,8 +823,8 @@ def Figure_2b(res_main_path, ci):
     " # Visualize the Pareto front in multi-objective optimization "
     print("Figure 2b:", ci)
     params = get_param("process")
-    for l, c in itertools.product(["nonlinear"], [None, "constr"]):
-        sub_viz_path = create_directory(params["viz_path"] + "2_pareto/")
+    for l, c in itertools.product(["nonlinear"], [None]):
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/2_pareto/")
         pareto_vs_iteration_a(params, res_main_path, sub_viz_path, (l, c, ci), True)
     plt.close()
 
@@ -817,7 +834,7 @@ def Figure_2c(res_main_path, ci):
     print("Figure 2c:", ci)
     params = get_param("solvent_process")
     for l, c in itertools.product(["nonlinear"], [None]):
-        sub_viz_path = create_directory(params["viz_path"] + "2_pareto/")
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/2_pareto/")
         pareto_vs_iteration_a(params, res_main_path, sub_viz_path, (l, c, ci), True)
     plt.close()
 
@@ -826,10 +843,10 @@ def Figure_2d(res_main_path, ci):
     " # Visualize the Pareto front in multi-objective optimization "
     print("Figure 2d:", ci)
     params = get_param("solvent_process")
-    solvents = ["0_C4H6O2-N1", "1_C5H8O2-D1", "2_C4H7NO-E2", "3_C4H5N-1", "7_C4H6O3"]
+    solvents = ["0_C5H8O2-D1", "1_C4H7NO-E2", "3_C4H6O2-N1", "5_C5H8O3-D2", "6_C4H6O3", "7_C8H8O-D3", "8_C4H10N2"]
     for l, c in itertools.product(["nonlinear"], [None]):
         for solvent in solvents:
-            sub_viz_path = create_directory(params["viz_path"] + f"2_pareto_{solvent}/")
+            sub_viz_path = create_directory(params["viz_path"] + mode + f"/2_pareto_{solvent}/")
             pareto_vs_iteration_d(params, res_main_path, sub_viz_path, (l, c, ci, solvent), True)
             plt.close()
 
@@ -862,11 +879,13 @@ def cand_prop_viz_pareto_a(params, res_main_path, path, model_spec):
             # y_mean, y_std = 3867.0632216546755, 1260.007701493469
             # y_mean, y_std = 3090.2694132801953, 1044.3813734345836
         elif ci == "T1T2":
-            xlim_dict = {"nonlinear": extend_xylim(0.99, 1)}
+            xlim_dict = {"nonlinear": extend_xylim(0.992, 0.998)}
             ylim_dict = {"nonlinear": extend_xylim(20000 / y_scale, 40000 / y_scale)}
             y_mean, y_std = 3883.816608040528 + 3090.2694132801953, np.sqrt(
                 1762.6347594241297 ** 2 + 1044.3813734345836 ** 2)
-        xticks = np.arange(0.990, 1.001, 0.002)
+        xticks = np.arange(0.992, 0.999, 0.002)
+        yticks = np.arange(20, 45, 5)
+
     dot_color = "blue" if params["task"] == "solvent" else "tab:grey"
 
     str_constr = "" if c is None else "_constr"
@@ -905,8 +924,8 @@ def cand_prop_viz_pareto_a(params, res_main_path, path, model_spec):
 
     print(f"# of data points: {len(x_cand)}", flush=True)
     plt.scatter(x_cand, y_cand, c=dot_color, s=dot_size, zorder=1, label="Model-based estimation")
-    plt.axhline(y=0, c="k", linestyle="--", zorder=0)
-    plt.axvline(x=1, c="k", linestyle="--", zorder=0)
+    # plt.axhline(y=0, c="k", linestyle="--", zorder=0)
+    # plt.axvline(x=1, c="k", linestyle="--", zorder=0)
     plt.plot(1, 0, "*", c="red", ms=10)
 
     F = np.load(res_path + "F_best.npy")
@@ -917,7 +936,7 @@ def cand_prop_viz_pareto_a(params, res_main_path, path, model_spec):
     if "T2" not in ci: plt.scatter(x_pred, y_pred, c="limegreen", s=dot_size, zorder=5, label="Benchmark"), \
                        print(x_pred, y_pred, flush=True)
     plt.xlabel("Predicted purity", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(xlim_dict[l])
     plt.ylim(ylim_dict[l])
     # plt.legend(prop={"size": legend_size})
@@ -931,10 +950,12 @@ def cand_prop_viz_pareto_a(params, res_main_path, path, model_spec):
                            print(x, y, flush=True)
 
         plt.xlabel("C$_4$H$_8$ purity", size=label_size)
-        plt.ylabel("Total heat duty (×10$^3$ kW)", size=label_size)
+        plt.ylabel("Total heat duty (MW)", size=label_size)
         plt.xlim(xlim_dict[l])
         plt.ylim(ylim_dict[l])
         if xticks is not None: plt.xticks(xticks)
+        if yticks is not None: plt.yticks(yticks)
+
         plt.legend(prop={"size": legend_size})
         plt.savefig(path + l + "_" + ci + str_constr + "_comp")
 
@@ -953,11 +974,11 @@ def cand_prop_viz_pareto_a(params, res_main_path, path, model_spec):
     plt.clf()
     plt.scatter(y_true, y_cand, c="blue", s=dot_size)
     if "T2" not in ci: plt.scatter(y, y_pred, c="limegreen", s=dot_size, zorder=1)
-    plt.xlabel("Reboiler heat duty (×10$^3$ kW)", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.xlabel("Reboiler heat duty (MW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(ylim_dict[l])
     plt.ylim(ylim_dict[l])
-    # plt.xticks(np.arange(1, 9))
+    if xticks is not None: plt.xticks(yticks), plt.yticks(yticks)
     plt.plot([-10, 100], [-10, 100], color="k", zorder=0)
     # plt.scatter(y_true, y_cand)
 
@@ -975,7 +996,7 @@ def cand_prop_viz_pareto_c(params, res_main_path, path, model_spec):
     if params["task"] == "solvent_process":
         if ci == "T1T2":
             xlim_dict = {"nonlinear": extend_xylim(0.6, 1)}
-            ylim_dict = {"nonlinear": extend_xylim(00000 / y_scale, 60000 / y_scale)}
+            ylim_dict = {"nonlinear": extend_xylim(10000 / y_scale, 50000 / y_scale)}
             y_mean, y_std = 3883.816608040528 + 3090.2694132801953, np.sqrt(
                 1762.6347594241297 ** 2 + 1044.3813734345836 ** 2)
     dot_color = "blue" if params["task"] == "solvent" else "tab:grey"
@@ -995,9 +1016,9 @@ def cand_prop_viz_pareto_c(params, res_main_path, path, model_spec):
 
     print(f"# of data points: {len(x_cand)}", flush=True)
     plt.scatter(x_cand, y_cand, c=dot_color, s=dot_size, zorder=1, label="Model-based estimation")
-    plt.axhline(y=0, c="k", linestyle="--", zorder=0)
-    plt.axvline(x=1, c="k", linestyle="--", zorder=0)
-    plt.plot(1, 0, "*", c="red", ms=10)
+    # plt.axhline(y=0, c="k", linestyle="--", zorder=0)
+    # plt.axvline(x=1, c="k", linestyle="--", zorder=0)
+    # plt.plot(1, 0, "*", c="red", ms=10)
 
     F = np.load(res_path + "F_best.npy")
     F = np.array([[1 - f[0], f[1] * y_std + y_mean] for f in F])
@@ -1007,7 +1028,7 @@ def cand_prop_viz_pareto_c(params, res_main_path, path, model_spec):
     # if "T2" not in ci: plt.scatter(x_pred, y_pred, c="limegreen", s=dot_size, zorder=5, label="Benchmark"), \
     #                    print(x_pred, y_pred, flush=True)
     plt.xlabel("Predicted purity", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(xlim_dict[l])
     plt.ylim(ylim_dict[l])
     # plt.legend(prop={"size": legend_size})
@@ -1021,10 +1042,10 @@ def cand_prop_viz_pareto_c(params, res_main_path, path, model_spec):
         #                    print(x, y, flush=True)
 
         plt.xlabel("C$_4$H$_8$ purity", size=label_size)
-        plt.ylabel("Reboiler heat duty (×10$^3$ kW)", size=label_size)
+        plt.ylabel("Reboiler heat duty (MW)", size=label_size)
         plt.xlim(xlim_dict[l])
         plt.ylim(ylim_dict[l])
-        plt.legend(prop={"size": legend_size})
+        plt.legend(loc="upper left", prop={"size": legend_size})
         plt.savefig(path + l + "_" + ci + str_constr + "_comp")
 
     x_low, x_up = xlim_dict[l]
@@ -1053,14 +1074,14 @@ def cand_prop_viz_pareto_c(params, res_main_path, path, model_spec):
     plt.clf()
     plt.scatter(y_true, y_cand, c="blue", s=dot_size)
     # if "T2" not in ci: plt.scatter(y, y_pred, c="limegreen", s=dot_size, zorder=1)
-    plt.xlabel("Reboiler heat duty (×10$^3$ kW)", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.xlabel("Reboiler heat duty (MW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(ylim_dict[l])
     plt.ylim(ylim_dict[l])
     # plt.xticks(np.arange(1, 9))
     if xticks is not None: plt.xticks(xticks)
     plt.plot([-10, 100], [-10, 100], color="k", zorder=0)
-    s2 = "MAE = " + str("{:.4f}".format(mean_absolute_error(y_true, y_cand))) + " (×10$^3$ kW)"
+    s2 = "MAE = " + str("{:.4f}".format(mean_absolute_error(y_true, y_cand))) + " MW"
     plt.text(x_text_2, y_text_2, s2, c="k", fontsize=text_size)
 
     # plt.scatter(y_true, y_cand)
@@ -1079,11 +1100,15 @@ def cand_prop_viz_pareto_d(params, res_main_path, path, model_spec):
     if params["task"] == "solvent_process":
         if ci == "T1T2":
             xlim_dict = {
-                "0_C4H6O2-N1": extend_xylim(0.96, 1),
-                "1_C5H8O2-D1": extend_xylim(0.92, 1),
-                "2_C4H7NO-E2": extend_xylim(0.96, 1),
-                "3_C4H5N-1": extend_xylim(0.94, 1),
-                "7_C4H6O3": extend_xylim(0.94, 1)
+                "0_C5H8O2-D1": (0.92, 1),
+                "1_C4H7NO-E2": (0.92, 1),
+                "2_C4H9NO-D0": (0.92, 1),
+                "3_C4H6O2-N1": (0.92, 1),
+                "4_C6H12O3-E2": (0.92, 1),
+                "5_C5H8O3-D2": (0.92, 1),
+                "6_C4H6O3": (0.92, 1),
+                "7_C8H8O-D3": (0.92, 1),
+                "8_C4H10N2": (0.8, 1)
             }
             ylim = extend_xylim(20000 / y_scale, 40000 / y_scale)
             y_mean, y_std = 3883.816608040528 + 3090.2694132801953, np.sqrt(
@@ -1108,15 +1133,16 @@ def cand_prop_viz_pareto_d(params, res_main_path, path, model_spec):
     plt.axvline(x=1, c="k", linestyle="--", zorder=0)
     plt.plot(1, 0, "*", c="red", ms=10)
 
-    F = np.load(res_path + "F_best.npy")
-    F = np.array([[1 - f[0], f[1] * y_std + y_mean] for f in F])
-    x_pareto, y_pareto = F[:, 0], F[:, 1] / y_scale
-    if params["task"] == "solvent": plt.scatter(x_pareto, y_pareto, c="tab:grey", s=dot_size, zorder=0)
+    if params["task"] == "solvent":
+        F = np.load(res_path + "F_best.npy")
+        F = np.array([[1 - f[0], f[1] * y_std + y_mean] for f in F])
+        x_pareto, y_pareto = F[:, 0], F[:, 1] / y_scale
+        plt.scatter(x_pareto, y_pareto, c="tab:grey", s=dot_size, zorder=0)
 
     # if "T2" not in ci: plt.scatter(x_pred, y_pred, c="limegreen", s=dot_size, zorder=5, label="Benchmark"), \
     #                    print(x_pred, y_pred, flush=True)
     plt.xlabel("Predicted purity", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(xlim_dict[solvent])
     plt.ylim(ylim)
     # plt.legend(prop={"size": legend_size})
@@ -1130,7 +1156,7 @@ def cand_prop_viz_pareto_d(params, res_main_path, path, model_spec):
         #                    print(x, y, flush=True)
 
         plt.xlabel("C$_4$H$_8$ purity", size=label_size)
-        plt.ylabel("Total heat duty (×10$^3$ kW)", size=label_size)
+        plt.ylabel("Total heat duty (MW)", size=label_size)
         plt.xlim(xlim_dict[solvent])
         plt.ylim(ylim)
         plt.legend(prop={"size": legend_size})
@@ -1162,14 +1188,14 @@ def cand_prop_viz_pareto_d(params, res_main_path, path, model_spec):
     plt.clf()
     plt.scatter(y_true, y_cand, c="blue", s=dot_size)
     # if "T2" not in ci: plt.scatter(y, y_pred, c="limegreen", s=dot_size, zorder=1)
-    plt.xlabel("Reboiler heat duty (×10$^3$ kW)", size=label_size)
-    plt.ylabel("Predicted heat duty (×10$^3$ kW)", size=label_size)
+    plt.xlabel("Reboiler heat duty (MW)", size=label_size)
+    plt.ylabel("Predicted heat duty (MW)", size=label_size)
     plt.xlim(ylim)
     plt.ylim(ylim)
     # plt.xticks(np.arange(1, 9))
     if xticks is not None: plt.xticks(xticks)
     plt.plot([-10, 100], [-10, 100], color="k", zorder=0)
-    s2 = "MAE = " + str("{:.4f}".format(mean_absolute_error(y_true, y_cand))) + " (×10$^3$ kW)"
+    s2 = "MAE = " + str("{:.4f}".format(mean_absolute_error(y_true, y_cand))) + " MW"
     plt.text(x_text_2, y_text_2, s2, c="k", fontsize=text_size)
 
     # plt.scatter(y_true, y_cand)
@@ -1185,7 +1211,7 @@ def Figure_3a(res_main_path):
     print("Figure 3a")
     params = get_param("solvent")
     for l, c in itertools.product(["nonlinear"], [None]):
-        sub_viz_path = create_directory(params["viz_path"] + "3_cand_prop_pareto" + "/")
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/3_cand_prop_pareto" + "/")
         cand_prop_viz_pareto_a(params, res_main_path, sub_viz_path, (l, c, "T1"))
     plt.close()
 
@@ -1194,8 +1220,8 @@ def Figure_3b(res_main_path, ci):
     """ # Visualize candidates' performance """
     print("Figure 3b:", ci)
     params = get_param("process")
-    for l, c in itertools.product(["nonlinear"], [None, "constr"]):
-        sub_viz_path = create_directory(params["viz_path"] + "3_cand_prop_pareto/")
+    for l, c in itertools.product(["nonlinear"], [None]):
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/3_cand_prop_pareto/")
         cand_prop_viz_pareto_a(params, res_main_path, sub_viz_path, (l, c, ci))
     plt.close()
 
@@ -1205,7 +1231,7 @@ def Figure_3c(res_main_path, ci):
     print("Figure 3c:", ci)
     params = get_param("solvent_process")
     for l, c in itertools.product(["nonlinear"], [None]):
-        sub_viz_path = create_directory(params["viz_path"] + f"3_cand_prop_pareto/")
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/3_cand_prop_pareto/")
         cand_prop_viz_pareto_c(params, res_main_path, sub_viz_path, (l, c, ci))
     plt.close()
 
@@ -1214,10 +1240,10 @@ def Figure_3d(res_main_path, ci):
     """ # Visualize candidates' performance """
     print("Figure 3d:", ci)
     params = get_param("solvent_process")
-    solvents = ["0_C4H6O2-N1", "1_C5H8O2-D1", "2_C4H7NO-E2", "3_C4H5N-1", "7_C4H6O3"]
+    solvents = ["0_C5H8O2-D1", "1_C4H7NO-E2", "3_C4H6O2-N1", "5_C5H8O3-D2", "6_C4H6O3", "7_C8H8O-D3", "8_C4H10N2"]
     for solvent in solvents:
         for l, c in itertools.product(["nonlinear"], [None]):
-            sub_viz_path = create_directory(params["viz_path"] + f"3_cand_prop_pareto_{solvent}/")
+            sub_viz_path = create_directory(params["viz_path"] + mode + f"/3_cand_prop_pareto_{solvent}/")
             cand_prop_viz_pareto_d(params, res_main_path, sub_viz_path, (l, c, ci, solvent))
     plt.close()
 
@@ -1291,7 +1317,7 @@ def cand_prop_viz_a(params, res_main_path, path, model_spec):
         plt.xlabel("C$_4$H$_8$ purity", size=label_size)
     elif ci == "T2":
         plt.xlabel("C$_4$H$_6$ purity", size=label_size)
-    plt.ylabel("Reboiler heat duty (×10$^3$ kW)", size=label_size)
+    plt.ylabel("Reboiler heat duty (MW)", size=label_size)
     plt.xlim(xlim_dict[l])
     plt.ylim(ylim_dict[l])
     if xticks is not None: plt.xticks(xticks)
@@ -1304,39 +1330,35 @@ def cand_prop_viz_c(params, path):
 
     alia = "C5H9NO-D2"
     name = "N-methyl-2-pyrrolidone"
-    x, y = 0.995782463, 28669.2154 / y_scale
+    x, y = 0.995556453, 28722.8724 / y_scale
 
-    alias = ["0_C4H6O2-N1", "1_C5H8O2-D1",
-             "2_C4H7NO-E2", "3_C4H5N-1",
-             "4_C4H8O2-D7", "5_C3H4O2-2",
-             "6_C4H9NO-D0", "7_C4H6O3"]
-    names = ["2,3-Butanedione", "Acetylacetone",
-             "3-Methoxypropionitrile", "Allyl cyanide",
-             "na", "na",
-             "na", "Acetic anhydride"]
-    purities = [0.987912354, 0.995699203,
-                0.995881792, 0.995696291,
-                0.995620636, 0.928612263,
-                0.995445529, 0.995547969]
-    duties = np.array([30319.91842, 25575.2543,
-                       33638.9703, 25670.44676,
-                       31926.95302, 23359.81492,
-                       41353.2985, 25569.4665]) / y_scale
+    alias = ["0_C5H8O2-D1", "1_C4H7NO-E2", "2_C4H9NO-D0",
+             "3_C4H6O2-N1", "4_C6H12O3-E2", "5_C5H8O3-D2",
+             "6_C4H6O3", "7_C8H8O-D3", "8_C4H10N2"]
+    # names = ["Acetylacetone", "3-Methoxypropionitrile", "na",
+    #          "2,3-Butanedione", "na", "Methyl acetoacetate",
+    #          "Acetic anhydride", "3-Methylbenzaldehyde", "Piperazine"]
+    purities = [0.996461199, 0.992114295, 0.970454812,
+                0.986881101, 0.92657804, 0.994260336,
+                0.995181747, 0.970643601, 0.893525629]
+    duties = np.array([27569.16833, 32308.5772, 31153.1198,
+                       25765.28744, 34093.2024, 33741.9732,
+                       26761.06467, 32168.2182, 26864.5371]) / y_scale
 
     plt.fill([0.995, 0.995, 1, 1], [0, 50000, 50000, 0], c="limegreen", alpha=0.3, zorder=0)
-    plt.axvline(x=0.995, c="limegreen", linestyle="--", alpha=1, zorder=1)
+    # plt.axvline(x=0.995, c="limegreen", linestyle="--", alpha=1, zorder=1)
     # plt.axhline(y=y, c="limegreen", linestyle="--", alpha=1, zorder=0)
     plt.scatter(x, y, c="limegreen", s=dot_size, zorder=2, label="Benchmark")
     # plt.axhline(y=0, c="k", linestyle="--", alpha=1, zorder=0)
-    plt.axvline(x=1, c="k", linestyle="--", alpha=1, zorder=1)
+    # plt.axvline(x=1, c="k", linestyle="--", alpha=1, zorder=1)
 
     plt.scatter(purities, duties, c="b", s=dot_size, zorder=3, label="Solvent candidate")
     plt.plot(1, 0, "*", c="red", ms=10)
     plt.xlabel("C$_4$H$_8$ purity", size=label_size)
-    plt.ylabel("Total heat duty (×10$^3$ kW)", size=label_size)
-    plt.xlim(extend_xylim(0.92, 1))
-    plt.ylim(extend_xylim(20000 / y_scale, 45000 / y_scale))
-    # if xticks is not None: plt.xticks(xticks)
+    plt.ylabel("Total heat duty (MW)", size=label_size)
+    plt.xlim((0.88, 1))
+    plt.ylim(extend_xylim(20000 / y_scale, 40000 / y_scale))
+    plt.yticks(np.arange(20, 41, 5))
     if params["task"] != "solvent": plt.legend(prop={"size": legend_size})
     plt.savefig(path + "simu")
 
@@ -1349,7 +1371,7 @@ def Figure_4a(res_main_path):
     print("Figure 4a:")
     params = get_param("solvent")
     for l, c in itertools.product(["nonlinear"], [None]):
-        sub_viz_path = create_directory(params["viz_path"] + "4_cand_prop/")
+        sub_viz_path = create_directory(params["viz_path"] + mode + "/4_cand_prop/")
         cand_prop_viz_a(params, res_main_path, sub_viz_path, (l, c, "T1"))
     plt.close()
 
@@ -1368,7 +1390,7 @@ def Figure_4c():
     """ # Visualize candidates' performance """
     print("Figure 4c:")
     params = get_param("solvent_process")
-    sub_viz_path = create_directory(params["viz_path"] + "4_cand_prop/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/4_cand_prop/")
     cand_prop_viz_c(params, sub_viz_path)
     plt.close()
 
@@ -1384,7 +1406,7 @@ def statistical_viz(params, df, path):
                   "CPMX_Aspen": "Heat capacity (kJ/kmol K)",
                   "MUMX_Aspen": "Viscosity (cP)",
                   "DIST_C4H8": "C$_4$H$_8$ purity",
-                  "RebDuty": "Reboiler heat duty (×10$^3$ kW)"}
+                  "RebDuty": "Reboiler heat duty (MW)"}
     mean_dict = {"S_Aspen": 1.0750789245099999,
                  "MW_Aspen": 120.23537299999991,
                  "RHO_Aspen": 883.7173103400003,
@@ -1427,7 +1449,7 @@ def statistical_viz(params, df, path):
 def Figure_xa():
     params = get_param("solvent")
     df = pd.read_csv("../data/solvent/candidate_AorB_303.csv")
-    sub_viz_path = create_directory(params["viz_path"] + "statistics/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/statistics/")
     df = clean_data(params, df)
     statistical_viz(params, df, sub_viz_path)
 
@@ -1602,7 +1624,7 @@ def Figure_5a(res_main_path):
     print("Figure 5a")
     params = get_param("solvent")
     solvents = ["C4H6O3", "C5H7NO2"]
-    sub_viz_path = create_directory(params["viz_path"] + "5_sol_dist/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/5_sol_dist/")
     sol_distribution_a(params, res_main_path, sub_viz_path, ("T1", solvents))
     plt.close()
 
@@ -1612,7 +1634,7 @@ def Figure_5c(res_main_path):
     print("Figure 5c")
     params = get_param("solvent_process")
     solvents = ["C5H8O2-D1", "C4H5N-1", "C4H6O3"]
-    sub_viz_path = create_directory(params["viz_path"] + "5_sol_dist/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/5_sol_dist/")
     sol_distribution_a(params, res_main_path, sub_viz_path, ("T1T2", solvents))
     plt.close()
 
@@ -1623,7 +1645,7 @@ def Figure_5d(res_main_path):
     params = get_param("solvent_process")
     solvents = ["C5H8O2-D1", "C4H5N-1", "C4H6O3"]
     bad_sols = ["C4H6O2-N1", "C4H7NO-E2", "C4H8O2-D7", "C3H4O2-2", "C4H9NO-D0"]
-    sub_viz_path = create_directory(params["viz_path"] + "5_sol_dist/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/5_sol_dist/")
     sol_distribution_d(params, res_main_path, sub_viz_path, ("T1T2", solvents, bad_sols))
     plt.close()
 
@@ -1652,18 +1674,15 @@ def TAC_pie(path):
 
     # 0: NMP
     plt.clf()
-    # CS1, CS2, CT1, CT2 = 2343778.25, 493234.207, 177198.301, 25568.5221
-    # HER1, HER2, HEC1, HEC2 = 1351705.84, 400930.64, 790524.479, 357518.445
-    # UCR1, UCR2, UCC1, UCC2 = 2178419.29, 3559926.72, 949980.795, 316639.092
-    CS1, CS2, CT1, CT2 = 2657799.87, 423069.118, 210415.714, 20816.5154
-    HER1, HER2, HEC1, HEC2 = 1058361.82, 380005.024, 967850.977, 346322.767
-    UCR1, UCR2, UCC1, UCC2 = 2200832.52, 3280221.88, 1297463.66, 301699.553
+    CS1, CS2, CT1, CT2 = 2678402.37, 460292.457, 212791.53, 23123.6563
+    HER1, HER2, HEC1, HEC2 = 1040191.15, 380548.835, 982931.09, 353517.195,
+    UCR1, UCR2, UCC1, UCC2 = 2205869.2, 3284416.32, 1328214.16, 311866.606
     CAPEX_1 = F * (CS1 + CT1 + HER1 + HEC1)
     CAPEX_2 = F * (CS2 + CT2 + HER2 + HEC2)
     OPEX_1 = UCR1 + UCC1
     OPEX_2 = UCR2 + UCC2
     TAC_NMP = CAPEX_1 + CAPEX_2 + OPEX_1 + OPEX_2
-    # print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2)
+    print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2, TAC_NMP)
 
     x = np.array([CAPEX_1, CAPEX_2, OPEX_1, OPEX_2]) / TAC_NMP
     patches, texts, autotexts = plt.pie(x, autopct="%1.2f%%", startangle=90, pctdistance=0.8, normalize=False,
@@ -1673,19 +1692,19 @@ def TAC_pie(path):
     plt.text(0, 0, str(np.round(TAC_NMP / 10 ** 6, 2)) + " MM$/yr", fontsize=text_size,
              horizontalalignment="center", verticalalignment="center")
     # plt.legend(patches, labels, loc="upper left", bbox_to_anchor=(1, 1), prop={"size": legend_size})
-    plt.savefig(path + "TAC_NMP")
+    # plt.savefig(path + "TAC_NMP")
 
     # 1: Acetylacetone, C5H8O2
     plt.clf()
-    CS1, CS2, CT1, CT2 = 2480739.97, 842199.826, 190345.625, 50484.498
-    HER1, HER2, HEC1, HEC2 = 700659.557, 598924.694, 750158.112, 525379.826
-    UCR1, UCR2, UCC1, UCC2 = 1825853.96, 1892686.16, 938768.623, 581165.48
+    CS1, CS2, CT1, CT2 = 3172698.96, 295564.361, 272793.457, 13218.5477
+    HER1, HER2, HEC1, HEC2 = 697562.62, 506554.067, 1263423, 456516.128
+    UCR1, UCR2, UCC1, UCC2 = 2388174.49, 1516667.32, 1956943.31, 462240.314,
     CAPEX_1 = F * (CS1 + CT1 + HER1 + HEC1)
     CAPEX_2 = F * (CS2 + CT2 + HER2 + HEC2)
     OPEX_1 = UCR1 + UCC1
     OPEX_2 = UCR2 + UCC2
     TAC = CAPEX_1 + CAPEX_2 + OPEX_1 + OPEX_2
-    # print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2)
+    print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2, TAC)
 
     x = np.array([CAPEX_1, CAPEX_2, OPEX_1, OPEX_2]) / TAC
     patches, texts, autotexts = plt.pie(x, radius=TAC / TAC_NMP, autopct="%1.2f%%", startangle=90, pctdistance=0.9,
@@ -1695,41 +1714,19 @@ def TAC_pie(path):
     plt.text(0, 0, str(np.round(TAC / 10 ** 6, 2)) + " MM$/yr", fontsize=text_size,
              horizontalalignment="center", verticalalignment="center")
     # plt.legend(patches, labels, loc="upper left", bbox_to_anchor=(1, 1), prop={"size": legend_size})
-    plt.savefig(path + "TAC_SOL1")
+    # plt.savefig(path + "TAC_SOL1")
 
-    # 2: Allyl cyanide, C4H5N
+    # 2: Acetic anhydride, C4H6O3
     plt.clf()
-    CS1, CS2, CT1, CT2 = 3003195.3, 591080.103, 251322.338, 30457.6977
-    HER1, HER2, HEC1, HEC2 = 1036433.99, 1134892.76, 1021610.76, 526834.714
-    UCR1, UCR2, UCC1, UCC2 = 2399186.54, 1005772.07, 1429659.91, 580001.252
+    CS1, CS2, CT1, CT2 = 2900692.32, 323058.692, 245058.453, 14341.5284
+    HER1, HER2, HEC1, HEC2 = 631587.426, 465714.611, 1306871.76, 401221.443
+    UCR1, UCR2, UCC1, UCC2 = 2368246.96, 1409783.54, 2065502.24, 378455.977
     CAPEX_1 = F * (CS1 + CT1 + HER1 + HEC1)
     CAPEX_2 = F * (CS2 + CT2 + HER2 + HEC2)
     OPEX_1 = UCR1 + UCC1
     OPEX_2 = UCR2 + UCC2
     TAC = CAPEX_1 + CAPEX_2 + OPEX_1 + OPEX_2
-    # print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2)
-
-    x = np.array([CAPEX_1, CAPEX_2, OPEX_1, OPEX_2]) / TAC
-    patches, texts, autotexts = plt.pie(x, radius=TAC / TAC_NMP, autopct="%1.2f%%", startangle=90, pctdistance=0.85,
-                                        normalize=False, wedgeprops={"linewidth": 1, "edgecolor": "w", "alpha": 1})
-    hole = plt.Circle((0, 0), 0.6, facecolor="white")
-    plt.gcf().gca().add_artist(hole)
-    plt.text(0, 0, str(np.round(TAC / 10 ** 6, 2)) + " MM$/yr", fontsize=text_size,
-             horizontalalignment="center", verticalalignment="center")
-    # plt.legend(patches, labels, loc="upper left", bbox_to_anchor=(1, 1), prop={"size": legend_size})
-    plt.savefig(path + "TAC_SOL2")
-
-    # 3: Acetic anhydride, C4H6O3
-    plt.clf()
-    CS1, CS2, CT1, CT2 = 3259661.54, 574438.221, 283125.25, 28942.6709
-    HER1, HER2, HEC1, HEC2 = 613609.374, 438457.203, 1314383.27, 367999.454
-    UCR1, UCR2, UCC1, UCC2 = 2331872.82, 1260890.99, 2085196.14, 331102.082
-    CAPEX_1 = F * (CS1 + CT1 + HER1 + HEC1)
-    CAPEX_2 = F * (CS2 + CT2 + HER2 + HEC2)
-    OPEX_1 = UCR1 + UCC1
-    OPEX_2 = UCR2 + UCC2
-    TAC = CAPEX_1 + CAPEX_2 + OPEX_1 + OPEX_2
-    # print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2)
+    print(CAPEX_1, CAPEX_2, OPEX_1, OPEX_2, TAC)
 
     x = np.array([CAPEX_1, CAPEX_2, OPEX_1, OPEX_2]) / TAC
     patches, texts, autotexts = plt.pie(x, radius=TAC / TAC_NMP, autopct="%1.2f%%", startangle=90, pctdistance=0.82,
@@ -1739,26 +1736,24 @@ def TAC_pie(path):
     plt.text(0, 0, str(np.round(TAC / 10 ** 6, 2)) + " MM$/yr", fontsize=text_size,
              horizontalalignment="center", verticalalignment="center")
     plt.legend(patches, labels, loc="upper left", bbox_to_anchor=(1, 1), prop={"size": legend_size})
-    plt.savefig(path + "TAC_SOL3")
+    # plt.savefig(path + "TAC_SOL3")
 
 
 def TAC_bar(path):
-    plt.rcParams["figure.figsize"] = (6, 3)
+    plt.rcParams["figure.figsize"] = (4, 3)
 
-    species = ("NMP", "Acetylacetone", "Allyl cyanide", "Acetic anhydride")
+    species = ("NMP", "Acetylacetone", "Acetic anhydride")
     weight_counts = {
-        "Annualized CAPEX$_{EDC}$": np.array(
-            [1.9681221072842884, 1.657478321566162, 2.1362599813981852, 2.199881397780663]),
-        "Annualized CAPEX$_{SRC}$": np.array(
-            [.4705601413523863, .8110610729196368, .9181347675606337, .5669165491196068]),
-        "OPEX$_{EDC}$": np.array([3.4982961799999997, 2.764622583, 3.82884645, 4.41706896]),
-        "OPEX$_{SRC}$": np.array([3.5819214329999997, 2.4738516399999997, 1.585773322, 1.591993072])
+        "Annualized CAPEX$_{EDC}$": np.array([1.9761192695891222, 2.1740248541531707, 2.0444360892534726]),
+        "Annualized CAPEX$_{SRC}$": np.array([.48956759297048306, .51143096103465214, .48428144447927456]),
+        "OPEX$_{EDC}$": np.array([3.5340833600000003, 4.345117800000001, 4.4337492]),
+        "OPEX$_{SRC}$": np.array([3.596282926, 1.978907634, 1.788239517])
     }
 
     width = 0.7
 
     fig, ax = plt.subplots()
-    bottom = np.zeros(4)
+    bottom = np.zeros(3)
 
     for boolean, weight_count in weight_counts.items():
         p = ax.bar(species, weight_count, width, label=boolean, bottom=bottom, alpha=0.85)
@@ -1778,7 +1773,7 @@ def Figure_6c1():
     """ Visualize the portion of TAC """
     print("Figure 6c")
     params = get_param("solvent_process")
-    sub_viz_path = create_directory(params["viz_path"] + "6_TAC/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/6_TAC/")
     TAC_bar(sub_viz_path)
 
 
@@ -1786,5 +1781,158 @@ def Figure_6c2():
     """ Visualize the portion of TAC """
     print("Figure 6c")
     params = get_param("solvent_process")
-    sub_viz_path = create_directory(params["viz_path"] + "6_TAC/")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/6_TAC/")
     TAC_pie(sub_viz_path)
+
+
+" #################################################################################################################### "
+
+
+def train_inter_extra(path):
+    plt.clf()
+    y_scale = 1000
+    x_low, x_up = -10, 200
+    xlabel_dict = {"DIST_C4H8_T1": "C$_4$H$_8$ purity",
+                   "DIST_C4H6_T2": "C$_4$H$_6$ purity",
+                   "RebDuty_T1": "EDC heat duty (MW)",
+                   "RebDuty_T2": "SRC heat duty (MW)"}
+    ylabel_dict = {"DIST_C4H8_T1": "Predicted C$_4$H$_8$ purity",
+                   "DIST_C4H6_T2": "Predicted C$_4$H$_6$ purity",
+                   "RebDuty_T1": "Predicted EDC heat duty (MW)",
+                   "RebDuty_T2": "Predicted SRC heat duty (MW)"}
+    xylim_dict = {"DIST_C4H8_T1": extend_xylim(0.5, 1),
+                  "DIST_C4H6_T2": extend_xylim(0.4, 1),
+                  "RebDuty_T1": extend_xylim(0 / y_scale, 110000 / y_scale),
+                  "RebDuty_T2": extend_xylim(0 / y_scale, 35000 / y_scale)}
+    diagonal_dict = {"DIST_C4H8_T1": (0, 2), "RebDuty_T1": (-10000 / y_scale, 120000 / y_scale),
+                     "DIST_C4H6_T2": (0, 2), "RebDuty_T2": (-10000 / y_scale, 40000 / y_scale)}
+    unit_dict = {"DIST_C4H8_T1": "",
+                 "DIST_C4H6_T2": "",
+                 "RebDuty_T1": " MW",
+                 "RebDuty_T2": " MW"}
+    xticks_dict = {"DIST_C4H8_T1": np.arange(0.5, 1.05, 0.1),
+                   "DIST_C4H6_T2": np.arange(0.4, 1.05, 0.1),
+                   "RebDuty_T1": np.arange(0, 120, 20),
+                   "RebDuty_T2": np.arange(0, 40, 5)}
+
+    df_T1_train = pd.read_csv("../data/train_inter_extra/T1_Train.csv")
+    df_T2_train = pd.read_csv("../data/train_inter_extra/T2_Train.csv")
+    df_T1_inter = pd.read_csv("../data/train_inter_extra/T1_Inter.csv")
+    df_T2_inter = pd.read_csv("../data/train_inter_extra/T2_Inter.csv")
+    df_T1_extra = pd.read_csv("../data/train_inter_extra/T1_Extra.csv")
+    df_T2_extra = pd.read_csv("../data/train_inter_extra/T2_Extra.csv")
+    print(len(df_T1_train), len(df_T2_train), len(df_T1_inter), len(df_T2_inter), len(df_T1_extra), len(df_T2_extra))
+
+    perf = "DIST_C4H8_T1"
+    x_low, x_up = diagonal_dict[perf]
+    xy_low, xy_up = xylim_dict[perf]
+    plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
+    plt.scatter(df_T1_train[perf].values, df_T1_train["Puri_pred"].values,
+                c="red", s=dot_size, alpha=0.7, linewidths=0, label="Training data")
+    plt.scatter(df_T1_inter[perf].values, df_T1_inter["Puri_pred"].values,
+                c="blue", s=dot_size, alpha=0.7, linewidths=0, label="Interpolation")
+    plt.scatter(df_T1_extra[perf].values, df_T1_extra["Puri_pred"].values,
+                c="green", s=dot_size, alpha=0.7, linewidths=0, label="Extrapolation")
+    plt.xlabel(xlabel_dict[perf], size=label_size)
+    plt.ylabel(ylabel_dict[perf], size=label_size)
+    plt.xlim(xy_low, xy_up)
+    plt.ylim(xy_low, xy_up)
+    if xticks_dict[perf] is not None:
+        plt.xticks(xticks_dict[perf])
+        plt.yticks(xticks_dict[perf])
+    plt.legend(loc="lower right", prop={"size": legend_size})
+    plt.savefig(path + "T1_Purity")
+    print(r2_score(df_T1_train[perf].values, df_T1_train["Puri_pred"].values),
+          r2_score(df_T1_inter[perf].values, df_T1_inter["Puri_pred"].values),
+          r2_score(df_T1_extra[perf].values, df_T1_extra["Puri_pred"].values))
+    print(mean_absolute_error(df_T1_train[perf].values, df_T1_train["Puri_pred"].values),
+          mean_absolute_error(df_T1_inter[perf].values, df_T1_inter["Puri_pred"].values),
+          mean_absolute_error(df_T1_extra[perf].values, df_T1_extra["Puri_pred"].values))
+
+    plt.clf()
+    perf = "RebDuty_T1"
+    x_low, x_up = diagonal_dict[perf]
+    xy_low, xy_up = xylim_dict[perf]
+    plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
+    plt.scatter(df_T1_train[perf].values / y_scale, df_T1_train["Duty_pred"].values / y_scale,
+                c="red", s=dot_size, alpha=0.7, linewidths=0, label="Training data")
+    plt.scatter(df_T1_inter[perf].values / y_scale, df_T1_inter["Duty_pred"].values / y_scale,
+                c="blue", s=dot_size, alpha=0.7, linewidths=0, label="Interpolation")
+    plt.scatter(df_T1_extra[perf].values / y_scale, df_T1_extra["Duty_pred"].values / y_scale,
+                c="green", s=dot_size, alpha=0.7, linewidths=0, label="Extrapolation")
+    plt.xlabel(xlabel_dict[perf], size=label_size)
+    plt.ylabel(ylabel_dict[perf], size=label_size)
+    plt.xlim(xy_low, xy_up)
+    plt.ylim(xy_low, xy_up)
+    if xticks_dict[perf] is not None:
+        plt.xticks(xticks_dict[perf])
+        plt.yticks(xticks_dict[perf])
+    plt.legend(loc="lower right", prop={"size": legend_size})
+    plt.savefig(path + "T1_Duty")
+    print(r2_score(df_T1_train[perf].values / y_scale, df_T1_train["Duty_pred"].values / y_scale),
+          r2_score(df_T1_inter[perf].values / y_scale, df_T1_inter["Duty_pred"].values / y_scale),
+          r2_score(df_T1_extra[perf].values / y_scale, df_T1_extra["Duty_pred"].values / y_scale))
+    print(mean_absolute_error(df_T1_train[perf].values / y_scale, df_T1_train["Duty_pred"].values / y_scale),
+          mean_absolute_error(df_T1_inter[perf].values / y_scale, df_T1_inter["Duty_pred"].values / y_scale),
+          mean_absolute_error(df_T1_extra[perf].values / y_scale, df_T1_extra["Duty_pred"].values / y_scale))
+
+    plt.clf()
+    perf = "DIST_C4H6_T2"
+    x_low, x_up = diagonal_dict[perf]
+    xy_low, xy_up = xylim_dict[perf]
+    plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
+    plt.scatter(df_T2_train[perf].values, df_T2_train["Puri_pred"].values,
+                c="red", s=dot_size, alpha=0.7, linewidths=0, label="Training data")
+    plt.scatter(df_T2_inter[perf].values, df_T2_inter["Puri_pred"].values,
+                c="blue", s=dot_size, alpha=0.7, linewidths=0, label="Interpolation")
+    plt.scatter(df_T2_extra[perf].values, df_T2_extra["Puri_pred"].values,
+                c="green", s=dot_size, alpha=0.7, linewidths=0, label="Extrapolation")
+    plt.xlabel(xlabel_dict[perf], size=label_size)
+    plt.ylabel(ylabel_dict[perf], size=label_size)
+    plt.xlim(xy_low, xy_up)
+    plt.ylim(xy_low, xy_up)
+    if xticks_dict[perf] is not None:
+        plt.xticks(xticks_dict[perf])
+        plt.yticks(xticks_dict[perf])
+    plt.legend(loc="lower right", prop={"size": legend_size})
+    plt.savefig(path + "T2_Purity")
+    print(r2_score(df_T2_train[perf].values, df_T2_train["Puri_pred"].values),
+          r2_score(df_T2_inter[perf].values, df_T2_inter["Puri_pred"].values),
+          r2_score(df_T2_extra[perf].values, df_T2_extra["Puri_pred"].values))
+    print(mean_absolute_error(df_T2_train[perf].values, df_T2_train["Puri_pred"].values),
+          mean_absolute_error(df_T2_inter[perf].values, df_T2_inter["Puri_pred"].values),
+          mean_absolute_error(df_T2_extra[perf].values, df_T2_extra["Puri_pred"].values))
+
+    plt.clf()
+    perf = "RebDuty_T2"
+    x_low, x_up = diagonal_dict[perf]
+    xy_low, xy_up = xylim_dict[perf]
+    plt.plot([x_low, x_up], [x_low, x_up], color="k", zorder=0)
+    plt.scatter(df_T2_train[perf].values / y_scale, df_T2_train["Duty_pred"].values / y_scale,
+                c="red", s=dot_size, alpha=0.7, linewidths=0, label="Training data")
+    plt.scatter(df_T2_inter[perf].values / y_scale, df_T2_inter["Duty_pred"].values / y_scale,
+                c="blue", s=dot_size, alpha=0.7, linewidths=0, label="Interpolation")
+    plt.scatter(df_T2_extra[perf].values / y_scale, df_T2_extra["Duty_pred"].values / y_scale,
+                c="green", s=dot_size, alpha=0.7, linewidths=0, label="Extrapolation")
+    plt.xlabel(xlabel_dict[perf], size=label_size)
+    plt.ylabel(ylabel_dict[perf], size=label_size)
+    plt.xlim(xy_low, xy_up)
+    plt.ylim(xy_low, xy_up)
+    if xticks_dict[perf] is not None:
+        plt.xticks(xticks_dict[perf])
+        plt.yticks(xticks_dict[perf])
+    plt.legend(loc="lower right", prop={"size": legend_size})
+    plt.savefig(path + "T2_Duty")
+    print(r2_score(df_T2_train[perf].values / y_scale, df_T2_train["Duty_pred"].values / y_scale),
+          r2_score(df_T2_inter[perf].values / y_scale, df_T2_inter["Duty_pred"].values / y_scale),
+          r2_score(df_T2_extra[perf].values / y_scale, df_T2_extra["Duty_pred"].values / y_scale))
+    print(mean_absolute_error(df_T2_train[perf].values / y_scale, df_T2_train["Duty_pred"].values / y_scale),
+          mean_absolute_error(df_T2_inter[perf].values / y_scale, df_T2_inter["Duty_pred"].values / y_scale),
+          mean_absolute_error(df_T2_extra[perf].values / y_scale, df_T2_extra["Duty_pred"].values / y_scale))
+
+
+def Figure_7():
+    print("Figure 6c")
+    params = get_param("solvent_process")
+    sub_viz_path = create_directory(params["viz_path"] + mode + "/7_Train_Inter_Extra/")
+    train_inter_extra(sub_viz_path)

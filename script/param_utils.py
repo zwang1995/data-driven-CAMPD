@@ -1,4 +1,4 @@
-# Created at 08 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 08 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Settings for data-driven modeling and optimization
 
 import itertools
@@ -135,7 +135,7 @@ def get_param(task=None, model_spec=("RebDuty_T1", "regression", "T1"), nonlinea
         params["used_data_file"] = "".join([params["out_path"], "used_data.csv"])
         params["params_file"] = "".join([params["out_path"], "params.json"])
         params["model_stru_file"] = "".join([params["out_path"], "model_stru.txt"])
-        params["logging_file"] = "".join([params["out_path"], "history.txt"])
+        params["log_file"] = "".join([params["out_path"], "history.log"])
 
         # Model-related files
         params["prop_scaler_file"] = "".join([params["out_path"], "prop_scaler.pkl"])

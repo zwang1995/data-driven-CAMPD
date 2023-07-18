@@ -1,4 +1,4 @@
-# Created at 05 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
+# Created on 05 Jul 2022 by Zihao Wang, zwang@mpi-magdeburg.mpg.de
 # Functionalities related to Artificial Neural Network
 
 import shutil
