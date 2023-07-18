@@ -19,6 +19,6 @@ The process simulation involved in this work is largely supported by our automat
 
 
 ## Authors
-* Zihao Wang (zwang@mpi-magdeburg.mpg.de)
+* [Zihao Wang](https://www.mpi-magdeburg.mpg.de/person/109361/842836)
 * [Prof. Dr.-Ing. Teng Zhou](https://facultyprofiles.hkust-gz.edu.cn/faculty-personal-page/ZHOU-Teng/tengzhou)
 * [Prof. Dr.-Ing. Kai Sundmacher](https://www.mpi-magdeburg.mpg.de/person/24754/16345)
