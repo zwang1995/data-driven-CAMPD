@@ -1736,7 +1736,7 @@ def TAC_pie(path):
     plt.text(0, 0, str(np.round(TAC / 10 ** 6, 2)) + " MM$/yr", fontsize=text_size,
              horizontalalignment="center", verticalalignment="center")
     plt.legend(patches, labels, loc="upper left", bbox_to_anchor=(1, 1), prop={"size": legend_size})
-    # plt.savefig(path + "TAC_SOL3")
+    # plt.savefig(path + "TAC_SOL2")
 
 
 def TAC_bar(path):
