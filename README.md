@@ -1,8 +1,12 @@
 # Data-Driven Integrated Molecular and Process Design
 
-This repository contains the data and scripts involved in the manuscript:
+This repository contains the data and scripts involved in the publications:
 
 **[Data-Driven Integrated Design of Solvents and Extractive Distillation Processes](https://doi.org/10.1002/aic.18236)**
+
+and
+
+**[Molecular Property Targeting for Optimal Solvent Design in Extractive Distillation Processes](https://doi.org/10.1016/B978-0-443-15274-0.50199-2)**
 
 ## Requirements 
 ### Library (Python 3.6)
