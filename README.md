@@ -2,7 +2,7 @@
 
 This repository contains the data and scripts involved in the manuscript:
 
-**Data-Driven Integrated Design of Solvents and Extractive Distillation Processes**
+**[Data-Driven Integrated Design of Solvents and Extractive Distillation Processes](https://doi.org/10.1002/aic.18236)**
 
 ## Requirements 
 ### Library (Python 3.6)
@@ -16,7 +16,6 @@ This repository contains the data and scripts involved in the manuscript:
 
 ## Note
 The process simulation involved in this work is largely supported by our automatic simulation tool, which can be found in "[**Automatic Process Simulation in Aspen Plus**](https://github.com/zwang1995/Aspen-Plus-Automation)".  
-
 
 ## Authors
 * [Zihao Wang](https://www.mpi-magdeburg.mpg.de/person/109361/842836)
