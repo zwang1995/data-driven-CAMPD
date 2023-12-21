@@ -8,6 +8,8 @@ and
 
 **[Molecular Property Targeting for Optimal Solvent Design in Extractive Distillation Processes](https://doi.org/10.1016/B978-0-443-15274-0.50199-2)**
 
+<img src="data-driven-CAMPD.png" width="800">
+
 ## Requirements 
 ### Library (Python 3.6)
 * [PyTorch](https://pytorch.org/): data-driven modeling
