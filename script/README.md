@@ -1,22 +1,17 @@
 
-- `BayesCAMPD.py`: CAMPD using Bayesian optimization
+- `aspen_utils.py`: functions used for process simulation
 
-- `process_simulation_CAMPD.py`: process simulation with given solvent and process parameters (CAMPD)
+- `basic_utils.py`: shared functions
 
-- `process_simulation_CAPD.py`: process simulation with given process parameters (process optimization)
+- `fnn_utils.py`: functions used for model development
 
-- `utility_aspen.py`: functions used for process simulation
+- `param_utils.py`: parameter/configuration
 
-- `utility_bayesopt.py`: functions used for Bayesian optimization
+- `surrogate_modeling.py`: data-driven modeling
 
-- `utility_common.py`: shared functions for the entire project
-
-- `utility_model.py`: functions used for modeling
-
-- `utility_params.py`: parameter/configuration used for the entire project
-
-- `utility_viz.py`: functions used for plotting in viz.py
+- `surrogate_optimization.py`: model-based optimization
 
 - `viz.py`: plotting
+- `viz_utils.py`: functions used in viz.py
 
-***Note:** Run `BayesCAMPD.py` to perform BayesCAMPD*
+***Note:** Run `surrogate_modeling.py` to establish data-driven models and run `surrogate_optimization.py` to perform CAMPD*
